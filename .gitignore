@@ -1,0 +1,13 @@
+# 各 Gradle 專案另有自己的 .gitignore（build/、.gradle/、local.properties、dist/）
+.kotlin/
+**/.kotlin/
+node_modules/
+__pycache__/
+*.pyc
+
+# 模型檔一律不進 git（示範模型禁止再配布；形象請放自己的形象庫倉庫）
+*.vrm
+*.glb
+形象倉庫/dist/
+形象倉庫/files/
+形象倉庫/thumbs/

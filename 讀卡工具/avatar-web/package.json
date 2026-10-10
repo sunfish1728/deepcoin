@@ -1,0 +1,17 @@
+{
+  "name": "tokencoin-avatar-web",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Token幣 讀卡工具的 VRM 渲染器（打包進 app/src/main/assets/avatar/）",
+  "scripts": {
+    "build": "esbuild src/main.js --bundle --minify --format=iife --target=chrome80 --outfile=../app/src/main/assets/avatar/stage.js",
+    "dev": "esbuild src/main.js --bundle --format=iife --target=chrome80 --sourcemap --outfile=../app/src/main/assets/avatar/stage.js"
+  },
+  "dependencies": {
+    "three": "0.180.0",
+    "@pixiv/three-vrm": "3.4.4"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.10"
+  }
+}
