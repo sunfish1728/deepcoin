@@ -74,10 +74,10 @@ GitHub：https://github.com/sunfish1728/deepcoin （公開）。
 
 | 元件 | 狀態 | 詳見 |
 |---|---|---|
-| 卡片格式 v1 | ✅ 不再寫入／校驗卡片 SHA，舊卡可讀 | SPEC.md |
-| 網頁版（鯨幣） | ✅ 0.1.1：移除卡片 SHA；依手機 App 還原主頁、聊天、形象、設定，不含寫卡；本機驗證，尚未部署。API／模型來源需 CORS | 網頁版/CLAUDE.md |
-| 寫卡工具 | ✅ 0.3.1：移除卡片 SHA；新增可設定網頁回退，⚠ 未真機測試 | 寫卡工具/CLAUDE.md |
-| 讀卡工具（鯨幣 客戶端） | ✅ 0.6.1：移除卡片 SHA；原有功能 + 可設定網頁回退／App Links 入口；⚠ 未用真實密鑰、真卡、真機測試 | 讀卡工具/CLAUDE.md |
+| 卡片格式 v1／v2 | ✅ 完整 v1／託管 v2；不寫入卡片 SHA，舊卡可讀 | SPEC.md |
+| 網頁版（鯨幣） | 🔧 0.2.1：刷卡自動載入、形象下載與空白對話修正，待公開部署驗證 | 網頁版/CLAUDE.md |
+| 寫卡工具 | 🔧 0.4.1：完整資料直接寫卡、舊託管卡遷移；測試與建置完成 | 寫卡工具/CLAUDE.md |
+| 讀卡工具（鯨幣 客戶端） | 🔧 0.7.1：移除託管寫入、舊卡遷移；驗證中 | 讀卡工具/CLAUDE.md |
 | 角色包格式 v1 | ✅ 完成 | 讀卡工具/AVATAR.md |
 | 形象庫格式 v1（GitHub） | ✅ 規格、工具 + 公開 deepcoin-avatars：三個木子惡魔 VRM，角色包在 Releases | 讀卡工具/AVATAR.md §6、形象倉庫/README.md |
 | RikkaHub 跳轉 | ⏸ 擱置 | 讀卡工具/AGENTS.md §研究筆記 |
@@ -113,6 +113,10 @@ cd <工具資料夾> && JAVA_HOME="$HOME/.gradle/jdks/eclipse_adoptium-17-amd64-
 
 ## 7. 全專案開發紀錄
 
+- **2026-10-11（0.7.0 發布完成）**：來源提交 44efe7b，公開 [v0.7.0](https://github.com/sunfish1728/deepcoin/releases/tag/v0.7.0) 提供 DeepCoin-0.7.0-debug.apk、TokenCoin-Writer-0.4.0-debug.apk、SHA256SUMS.txt；遠端大小／SHA 與本機一致。來源變更已推 codex/hosted-cards-0.7.0，變更頁 https://github.com/sunfish1728/deepcoin/pull/1 ，尚未合併 main。網頁獨立倉庫 main 的 Pages 部署成功。
+
+- **2026-10-11（0.7.0）**：建立獨立公開 deepcoin-web 並部署 https://sunfish1728.github.io/deepcoin-web/；設定另存 deepcoin-web-API。寫卡新增可選外部託管，排除 API key，上傳回讀成功才寫入 v2 連結卡；刷卡先抓設定並本機合併 key，同網址已驗證快取可離線用。兩 Android 與網頁同步 SPEC.md，新卡單 URI、不再重複 MIME；網址空白預設 Pages，仍可自訂。使用者明確接受共用 APK token 可被取出及資料倉庫可能被修改，token 只綁定資料倉庫 Contents 讀寫；以忽略的 hosting.properties 注入，不提交原始碼。鯨幣78、寫卡17、網頁20項測試通過；公開上傳／讀回、Pages、瀏覽器與模擬器 v2 載入已驗證；真卡 NFC 待測。詳見各元件 CLAUDE.md。
+
 - **2026-10-11（0.6.1 發布完成）**：程式碼 eda7244 已推上 deepcoin/main；[v0.6.1](https://github.com/sunfish1728/deepcoin/releases/tag/v0.6.1) 公開提供 DeepCoin-0.6.1-debug.apk、TokenCoin-Writer-0.3.1-debug.apk、SHA256SUMS.txt，遠端資產大小／雜湊已與本機核對。
 
 - **2026-10-11（0.6.1）**：依使用者要求移除卡片 SHA-256，JSON 每份減少 73 bytes；鯨幣 0.6.1、寫卡工具 0.3.1、網頁版 0.1.1 同步。舊卡 sha 忽略，複製／分享／重寫時移除；其他未知欄位保留。形象下載校驗與 APK 簽署維持。測試：鯨幣 73、寫卡 12、網頁 15 項通過，三端建置成功。新卡需新版 App；真機 NFC 待驗證。
@@ -143,3 +147,10 @@ cd <工具資料夾> && JAVA_HOME="$HOME/.gradle/jdks/eclipse_adoptium-17-amd64-
 - 完成後，更新該工具的 `AGENTS.md`；有全專案層級的變更，也要更新本檔 §4 和 §7。
 
 0.6.1 檢查補充：最後一輪聊天自動標題測試曾等待逾時；未改聊天程式，單獨重跑完整鯨幣測試後 73 項全數通過並完成 APK 建置。
+
+## 2026-10-12：刷卡與對話修正（進行中）
+
+- 使用者確認未開託管的卡也無法載入；重現同分頁只改 fragment 時未處理新卡，新增 hashchange／pageshow 入口，匯入不再等待模型資料庫。
+- 新版移除託管寫入與共用 token；舊 v2 由快取或六份公開設定備份轉 v1。使用者最新指示：倉庫若還沒刪就保留，因此 deepcoin-web-API 未刪除。
+- 三個木子惡魔角色包在網頁部署時核對大小／SHA 後一起發布，來源模型不進 git，解決 Releases 的瀏覽器跨來源限制。
+- 網頁只有送出訊息才保存對話，清除既有空白紀錄；已送出但 API 失敗的對話保留。App／Chrome 選擇器維持原狀。

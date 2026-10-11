@@ -36,6 +36,7 @@ data class CardForm(
     val aarEnabled: Boolean = true,
     val aarPackage: String = "",
     val webUrl: String = "",
+    val hosted: Boolean = false,
 ) {
     /** 轉換並驗證；失敗時回傳錯誤訊息清單。 */
     fun toCard(now: Long = Instant.now().epochSecond): Pair<TokenCard?, List<String>> {

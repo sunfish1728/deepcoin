@@ -4,13 +4,15 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 /**
- * Token幣 卡片資料格式 v1（詳見 SPEC.md）。
+ * Token幣 完整 v1／託管 v2 卡片資料（詳見 SPEC.md）。
  *
- * 卡片上存一筆 NDEF MIME 記錄 [MIME]，內容是「正規化 JSON」：
+ * 新版 NDEF 存一筆 HTTPS URI，fragment 裡是 Base64url 正規化 JSON；兼容舊 MIME [MIME]。
  * key 依字典序排列、無空白、空值欄位省略。舊版頂層 `sha` 讀取時忽略。
  */
 data class TokenCard(
     val v: Int = VERSION,
+    /** v2 託管設定網址；空字串為完整 v1 卡片。 */
+    val ref: String = "",
     /** 卡片 ID（隨機 8 位十六進位） */
     val id: String,
     /** 卡片名稱，例如「DeepSeek娘幣」 */
@@ -63,11 +65,16 @@ object TokenCardCodec {
 
     private val KNOWN = setOf(
         "v", "id", "title", "vendor", "model", "models", "provider", "proto", "base", "key",
-        "apps", "iat", "exp", "balance_usd", "char", "char_id", "avatar", "note", "sha",
+        "apps", "iat", "exp", "balance_usd", "char", "char_id", "avatar", "note", "sha", "ref",
     )
 
     /** 不含 sha 的欄位表，空值省略。 */
     fun fields(c: TokenCard): Map<String, Any> {
+        if (c.ref.isNotBlank()) {
+            require(c.id.matches(Regex("^[0-9a-fA-F]{8}$")) && c.key.isNotBlank()) { "託管卡片缺少 ID 或密鑰" }
+            WebCardLink.validate(c.ref)
+            return mapOf("v" to 2L, "id" to c.id, "key" to c.key, "ref" to c.ref)
+        }
         val m = LinkedHashMap<String, Any>()
         m.putAll(c.extra - "sha")
         m["v"] = c.v.toLong()
@@ -110,7 +117,7 @@ object TokenCardCodec {
         fun n(k: String) = (noSha[k] as? Number)?.toLong()
 
         val card = TokenCard(
-            v = n("v")?.toInt() ?: 0,
+            v = n("v")?.toInt() ?: 0, ref = s("ref"),
             id = s("id"), title = s("title"), vendor = s("vendor"), model = s("model"),
             models = l("models"), provider = s("provider"), proto = s("proto"),
             base = s("base"), key = s("key"), apps = l("apps"),
@@ -118,6 +125,11 @@ object TokenCardCodec {
             char = s("char"), charId = s("char_id"), avatar = s("avatar"), note = s("note"),
             extra = noSha.filterKeys { it !in KNOWN },
         )
+        require(card.v == 1 || card.v == 2) { "不支援的卡片版本" }
+        if (card.v == 2) {
+            require(card.ref.isNotBlank()) { "託管卡片沒有設定網址" }
+            fields(card)
+        } else require(card.ref.isEmpty()) { "v1 不可含 ref" }
         return DecodedCard(card, canonicalJson(noSha))
     }
 

@@ -12,9 +12,9 @@ android {
         applicationId = "com.tokencoin.client"
         minSdk = 26
         targetSdk = 35
-        versionCode = 7
-        versionName = "0.6.1"
-        manifestPlaceholders["tokenCoinWebHost"] = providers.gradleProperty("tokenCoinWebHost").getOrElse("deepcoin.invalid")
+        versionCode = 9
+        versionName = "0.7.1"
+        manifestPlaceholders["tokenCoinWebHost"] = providers.gradleProperty("tokenCoinWebHost").getOrElse("sunfish1728.github.io")
     }
 
     buildTypes {
@@ -31,6 +31,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 

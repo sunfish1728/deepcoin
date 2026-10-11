@@ -5,6 +5,8 @@ import java.util.Base64
 
 /** Web fallback: canonical card JSON in fragment; the fragment is not sent to the host. */
 object WebCardLink {
+    const val DEFAULT_WEB_URL = "https://sunfish1728.github.io/deepcoin-web/"
+    fun effectiveUrl(value: String) = value.trim().ifEmpty { DEFAULT_WEB_URL }
     fun validate(value: String): URI {
         val uri = runCatching { URI(value.trim()) }.getOrElse { throw IllegalArgumentException("網頁版網址格式錯誤") }
         require(uri.scheme == "https" && !uri.host.isNullOrBlank() && uri.userInfo == null && uri.fragment == null) {
@@ -14,7 +16,7 @@ object WebCardLink {
     }
 
     fun create(webUrl: String, card: TokenCard): String {
-        val uri = validate(webUrl)
+        val uri = validate(effectiveUrl(webUrl))
         val payload = Base64.getUrlEncoder().withoutPadding().encodeToString(TokenCardCodec.encode(card))
         return uri.toASCIIString() + "#card=" + payload
     }

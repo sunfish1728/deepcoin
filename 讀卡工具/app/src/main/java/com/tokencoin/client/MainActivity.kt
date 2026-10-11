@@ -30,6 +30,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.CancellationException
 import com.tokencoin.client.nfc.NfcIo
 import com.tokencoin.client.net.BalanceTracker
 import com.tokencoin.client.net.ModelCatalog
@@ -155,9 +159,24 @@ class MainActivity : ComponentActivity(), NfcAdapter.ReaderCallback {
         runOnUiThread {
             when {
                 r == null -> state.message("讀卡失敗，請再刷一次")
-                r.decoded != null -> state.acceptCard(r.decoded!!)
+                r.decoded != null -> acceptDecoded(r.decoded!!)
                 else -> state.message(r.error ?: "不是鯨幣卡片")
             }
+        }
+    }
+
+    private var hostedRead: Job? = null
+
+    private fun acceptDecoded(d: com.tokencoin.client.card.DecodedCard) {
+        hostedRead?.cancel()
+        hostedRead = engineScope.launch {
+            try {
+                if (d.card.v == 2) state.message("正在轉換舊卡設定…")
+                val (resolved, cached) = withContext(Dispatchers.IO) { com.tokencoin.client.net.LegacyCards.resolve(applicationContext, d) }
+                state.acceptCard(resolved)
+                if (cached) state.message("舊託管卡已轉為完整資料，請重新寫卡")
+            } catch (e: CancellationException) { throw e }
+            catch (e: Exception) { state.message(e.message ?: "舊卡設定轉換失敗") }
         }
     }
 
@@ -166,7 +185,7 @@ class MainActivity : ComponentActivity(), NfcAdapter.ReaderCallback {
         val debugCard = intent?.getStringExtra("debug_card")
         if (debugCard != null && applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE != 0) {
             runCatching { com.tokencoin.client.card.TokenCardCodec.decode(debugCard.toByteArray(Charsets.UTF_8)) }
-                .onSuccess { state.acceptCard(it) }
+                .onSuccess { acceptDecoded(it) }
                 .onFailure { state.message("debug_card 解析失敗：${it.message}") }
             return
         }
@@ -174,7 +193,7 @@ class MainActivity : ComponentActivity(), NfcAdapter.ReaderCallback {
             val link = intent.data?.toString()
             if (link != null && (intent.action == Intent.ACTION_VIEW || link.contains("#card="))) {
                 runCatching { com.tokencoin.client.card.WebCardLink.decode(link) }
-                    .onSuccess { state.acceptCard(it) }
+                    .onSuccess { acceptDecoded(it) }
                     .onFailure { state.message("卡片連結解析失敗：${it.message}") }
                 return
             }
@@ -188,9 +207,7 @@ class MainActivity : ComponentActivity(), NfcAdapter.ReaderCallback {
         }
         val msg = messages?.firstOrNull() ?: return state.message("讀不到卡片資料")
         runCatching { NfcIo.decodeMessage(msg) }
-            .onSuccess { state.acceptCard(it) }
+            .onSuccess { acceptDecoded(it) }
             .onFailure { state.message(it.message ?: "卡片資料損毀") }
     }
 }
-
-/** SHA 不符的卡片不採用。 */

@@ -108,7 +108,8 @@ class ClientState(
 
     /** 把剛寫入的卡片直接設為本機卡片（不用再刷一次） */
     fun acceptWritten(c: TokenCard) {
-        applyCard(TokenCardCodec.decode(TokenCardCodec.encode(c)))
+        val complete = c.copy(v = 1, ref = "")
+        applyCard(TokenCardCodec.decode(TokenCardCodec.encode(complete)))
         message("已套用：${c.title.ifBlank { c.provider + " · " + c.model }}")
     }
 

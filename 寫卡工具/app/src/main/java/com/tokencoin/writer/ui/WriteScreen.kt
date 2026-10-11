@@ -70,7 +70,7 @@ fun WriteScreen(state: AppState) {
     var probe by remember { mutableStateOf<ProbeResult?>(null) }
     val scope = rememberCoroutineScope()
 
-    val (card, errors) = f.toCard()
+    val (card, errors) = remember(f) { f.toCard() }
     val aar = f.aarPackage.trim().ifEmpty { Presets.DEFAULT_AAR }.takeIf { f.aarEnabled }
     val size = card?.let { NfcIo.buildMessage(it, aar, f.webUrl).byteArrayLength }
 
@@ -199,15 +199,7 @@ fun WriteScreen(state: AppState) {
         Section("其他") {
             Field("備註", f.note, { set { copy(note = it) } }, singleLine = false)
             Field("網頁版網址（未安裝 App 時使用）", f.webUrl, { set { copy(webUrl = it) } }, keyboard = KeyboardType.Uri,
-                hint = "已部署的 HTTPS 網址。填入後以網址取代 AAR，並帶卡片資料；留空沿用 AAR。App 自動接住網址需設定 App Links。")
-            if (f.webUrl.isBlank()) {
-            SwitchRow("附加 Android App 記錄（AAR）", "刷卡時自動開啟指定 App（日後的改版 RikkaHub）", f.aarEnabled) {
-                set { copy(aarEnabled = it) }
-            }
-            if (f.aarEnabled) {
-                Field("App 套件名", f.aarPackage, { set { copy(aarPackage = it) } }, hint = Presets.DEFAULT_AAR, mono = true)
-            }
-            } else Text("網頁回退模式：不附加 AAR")
+                hint = "留空使用 https://sunfish1728.github.io/deepcoin-web/；也可填自己的 HTTPS 網址。只存一筆網址。")
         }
 
         SizeCard(size, errors)
