@@ -74,10 +74,10 @@ GitHub：https://github.com/sunfish1728/deepcoin （公開）。
 
 | 元件 | 狀態 | 詳見 |
 |---|---|---|
-| 卡片格式 v1 | ✅ 完成 | SPEC.md |
-| 網頁版（鯨幣） | ✅ 0.1.0：依手機 App 還原主頁、聊天、形象、設定，不含寫卡；本機驗證，尚未部署。API／模型來源需 CORS | 網頁版/CLAUDE.md |
-| 寫卡工具 | ✅ 0.3.0：新增可設定網頁回退，⚠ 未真機測試 | 寫卡工具/CLAUDE.md |
-| 讀卡工具（鯨幣 客戶端） | ✅ 0.6.0：原有功能 + 可設定網頁回退／App Links 入口；⚠ 未用真實密鑰、真卡、真機測試 | 讀卡工具/CLAUDE.md |
+| 卡片格式 v1 | ✅ 不再寫入／校驗卡片 SHA，舊卡可讀 | SPEC.md |
+| 網頁版（鯨幣） | ✅ 0.1.1：移除卡片 SHA；依手機 App 還原主頁、聊天、形象、設定，不含寫卡；本機驗證，尚未部署。API／模型來源需 CORS | 網頁版/CLAUDE.md |
+| 寫卡工具 | ✅ 0.3.1：移除卡片 SHA；新增可設定網頁回退，⚠ 未真機測試 | 寫卡工具/CLAUDE.md |
+| 讀卡工具（鯨幣 客戶端） | ✅ 0.6.1：移除卡片 SHA；原有功能 + 可設定網頁回退／App Links 入口；⚠ 未用真實密鑰、真卡、真機測試 | 讀卡工具/CLAUDE.md |
 | 角色包格式 v1 | ✅ 完成 | 讀卡工具/AVATAR.md |
 | 形象庫格式 v1（GitHub） | ✅ 規格、工具 + 公開 deepcoin-avatars：三個木子惡魔 VRM，角色包在 Releases | 讀卡工具/AVATAR.md §6、形象倉庫/README.md |
 | RikkaHub 跳轉 | ⏸ 擱置 | 讀卡工具/CLAUDE.md §研究筆記 |
@@ -113,6 +113,8 @@ cd <工具資料夾> && JAVA_HOME="$HOME/.gradle/jdks/eclipse_adoptium-17-amd64-
 
 ## 7. 全專案開發紀錄
 
+- **2026-10-11（0.6.1）**：依使用者要求移除卡片 SHA-256，JSON 每份減少 73 bytes；鯨幣 0.6.1、寫卡工具 0.3.1、網頁版 0.1.1 同步。舊卡 sha 忽略，複製／分享／重寫時移除；其他未知欄位保留。形象下載校驗與 APK 簽署維持。測試：鯨幣 73、寫卡 12、網頁 15 項通過，三端建置成功。新卡需新版 App；真機 NFC 待驗證。
+
 - **2026-10-11（0.6.0 發布）**：鯨幣 0.6.0、寫卡工具 0.3.0 與網頁版原始碼提交 f4b134b 已推上 deepcoin/main；公開 Release v0.6.0 提供 DeepCoin-0.6.0-debug.apk、TokenCoin-Writer-0.3.0-debug.apk 和 SHA256SUMS.txt。App 72 項、寫卡 11 項、網頁 13 項測試通過。形象庫三個 Release 遠端大小／SHA 已核對。網頁尚未部署、正式網址仍待設定。
 
 - **2026-10-11（形象庫發布）**：建立公開 https://github.com/sunfish1728/deepcoin-avatars，topic deepcoin-avatar。DeepSeek 鯨魚娘、白紫龍娘、Claude 娘三個角色包各發布 v1.0.0；索引含 SHA、大小、縮圖，README／索引／包內 credit／CREDITS.txt／Release 全部署名「木子惡魔」。原 VRM 內建禁止再配布，使用者另外明確確認「可發布，需署名」後，依該發布許可上傳，保留原檔不修改；許可差異見形象庫 PERMISSION.md。deepcoin 不放模型，本機獨立 checkout 放於被忽略的 形象倉庫/本機倉庫/。
@@ -142,3 +144,5 @@ cd <工具資料夾> && JAVA_HOME="$HOME/.gradle/jdks/eclipse_adoptium-17-amd64-
 - 開工前，先在 §4 把要做的元件標成「🔧 進行中（對話主題）」。
 - 一個對話只動自己負責的工具資料夾。改卡片格式的話，依 §5 處理。
 - 完成後，更新該工具的 `CLAUDE.md`；有全專案層級的變更，也要更新本檔 §4 和 §7。
+
+0.6.1 檢查補充：最後一輪聊天自動標題測試曾等待逾時；未改聊天程式，單獨重跑完整鯨幣測試後 73 項全數通過並完成 APK 建置。

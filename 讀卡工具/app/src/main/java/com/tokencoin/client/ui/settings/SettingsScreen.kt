@@ -35,7 +35,6 @@ import com.tokencoin.client.ClientState
 import com.tokencoin.client.ThemeMode
 import com.tokencoin.client.card.DecodedCard
 import com.tokencoin.client.card.Presets
-import com.tokencoin.client.card.ShaStatus
 import com.tokencoin.client.card.TokenCard
 import com.tokencoin.client.ui.avatar.AvatarRepoBrowser
 import com.tokencoin.client.ui.avatar.AvatarSheet
@@ -210,14 +209,10 @@ private fun CardDetails(d: DecodedCard, detected: List<String>, onCopied: (Strin
     }
 
     Row(verticalAlignment = Alignment.CenterVertically) {
-        StatusDot(if (d.shaStatus == ShaStatus.OK) c.success else c.danger)
+        StatusDot(c.success)
         Spacer(Modifier.width(6.dp))
         Text(
-            when (d.shaStatus) {
-                ShaStatus.OK -> "SHA-256 校驗通過"
-                ShaStatus.MISMATCH -> "SHA-256 不符"
-                ShaStatus.MISSING -> "沒有 SHA-256"
-            },
+            "已載入卡片",
             color = c.textMuted, style = TcLabelStyle, modifier = Modifier.weight(1f),
         )
         TcTextAction("複製 JSON", { copy(d.canonicalJson, " JSON（含密鑰）") })
@@ -232,7 +227,6 @@ private fun CardDetails(d: DecodedCard, detected: List<String>, onCopied: (Strin
         t.exp?.let { (if (it < Instant.now().epochSecond) "已過期 " else "") + dateFmt.format(Instant.ofEpochSecond(it)) } ?: "不限",
     )
     InfoRow("卡片記錄餘額", t.balanceUsd.takeIf { it.isNotBlank() }?.let { "$$it" } ?: "—", mono = true)
-    InfoRow("SHA-256", d.computedSha.take(16) + "…", mono = true)
 
     SubHead("模型")
     InfoRow("模型供應商", Presets.vendors.firstOrNull { it.id == t.vendor }?.label?.let { "$it（${t.vendor}）" } ?: t.vendor)

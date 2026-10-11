@@ -4,7 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {install,loadRepo} from '../src/avatars.js';
 import {avatarStore} from '../src/storage.js';
-import {sha256} from '../src/card.js';
+import {sha256} from '../src/hash.js';
 function model(){const json={asset:{version:'2.0'},extensions:{VRMC_vrm:{meta:{name:'合成測試角色',authors:['測試']}}}};const body=strToU8(JSON.stringify(json));const padded=Math.ceil(body.length/4)*4;const bytes=new Uint8Array(20+padded);bytes.fill(32,20);bytes.set(body,20);const d=new DataView(bytes.buffer);d.setUint32(0,0x46546c67,true);d.setUint32(4,2,true);d.setUint32(8,bytes.length,true);d.setUint32(12,padded,true);d.setUint32(16,0x4e4f534a,true);return bytes;}
 test('VRM import survives IndexedDB roundtrip without a remote model',async()=>{
   const a=await install(model(),'test.vrm','https://example.com/test.vrm','whale');const saved=(await avatarStore('getAll')).find(x=>x.id===a.id);assert.equal(saved.name,'合成測試角色');assert.equal(saved.charId,'whale');assert.equal(saved.blob.size,model().length);await avatarStore('delete',a.id);assert.ok(!(await avatarStore('getAll')).some(x=>x.id===a.id));

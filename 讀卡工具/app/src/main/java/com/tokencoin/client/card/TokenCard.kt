@@ -2,14 +2,12 @@ package com.tokencoin.client.card
 
 import org.json.JSONArray
 import org.json.JSONObject
-import java.security.MessageDigest
 
 /**
  * Token幣 卡片資料格式 v1（詳見 SPEC.md）。
  *
  * 卡片上存一筆 NDEF MIME 記錄 [MIME]，內容是「正規化 JSON」：
- * key 依字典序排列、無空白、空值欄位省略。`sha` 欄位為其餘所有欄位
- * （含未知欄位）正規化後 UTF-8 位元組的 SHA-256 小寫十六進位。
+ * key 依字典序排列、無空白、空值欄位省略。舊版頂層 `sha` 讀取時忽略。
  */
 data class TokenCard(
     val v: Int = VERSION,
@@ -47,7 +45,7 @@ data class TokenCard(
     val avatar: String = "",
     /** 備註 */
     val note: String = "",
-    /** 未知欄位（向前相容，原樣保留並納入 SHA 計算） */
+    /** 未知欄位（向前相容，原樣保留，舊版 sha 除外） */
     val extra: Map<String, Any> = emptyMap(),
 ) {
     companion object {
@@ -58,19 +56,8 @@ data class TokenCard(
 
 data class DecodedCard(
     val card: TokenCard,
-    val storedSha: String?,
-    val computedSha: String,
     val canonicalJson: String,
-) {
-    val shaStatus: ShaStatus
-        get() = when {
-            storedSha == null -> ShaStatus.MISSING
-            storedSha.equals(computedSha, ignoreCase = true) -> ShaStatus.OK
-            else -> ShaStatus.MISMATCH
-        }
-}
-
-enum class ShaStatus { OK, MISMATCH, MISSING }
+)
 
 object TokenCardCodec {
 
@@ -82,7 +69,7 @@ object TokenCardCodec {
     /** 不含 sha 的欄位表，空值省略。 */
     fun fields(c: TokenCard): Map<String, Any> {
         val m = LinkedHashMap<String, Any>()
-        m.putAll(c.extra)
+        m.putAll(c.extra - "sha")
         m["v"] = c.v.toLong()
         fun str(k: String, s: String) { if (s.isNotBlank()) m[k] = s.trim() }
         fun list(k: String, l: List<String>) {
@@ -109,24 +96,13 @@ object TokenCardCodec {
         return m
     }
 
-    fun sha256Hex(fields: Map<String, Any>): String {
-        val bytes = MessageDigest.getInstance("SHA-256")
-            .digest(canonicalJson(fields - "sha").toByteArray(Charsets.UTF_8))
-        return bytes.joinToString("") { "%02x".format(it) }
-    }
-
-    /** 卡片 payload：正規化 JSON（含 sha）的 UTF-8 位元組。 */
-    fun encode(c: TokenCard): ByteArray {
-        val f = fields(c)
-        val withSha = f + ("sha" to sha256Hex(f))
-        return canonicalJson(withSha).toByteArray(Charsets.UTF_8)
-    }
+    /** 卡片 payload：正規化 JSON 的 UTF-8 位元組，不含舊版 sha。 */
+    fun encode(c: TokenCard): ByteArray = canonicalJson(fields(c)).toByteArray(Charsets.UTF_8)
 
     fun decode(payload: ByteArray): DecodedCard {
         val text = payload.toString(Charsets.UTF_8)
         @Suppress("UNCHECKED_CAST")
         val raw = fromJson(JSONObject(text)) as Map<String, Any>
-        val storedSha = raw["sha"] as? String
         val noSha = raw - "sha"
 
         fun s(k: String) = noSha[k] as? String ?: ""
@@ -142,7 +118,7 @@ object TokenCardCodec {
             char = s("char"), charId = s("char_id"), avatar = s("avatar"), note = s("note"),
             extra = noSha.filterKeys { it !in KNOWN },
         )
-        return DecodedCard(card, storedSha, sha256Hex(noSha), canonicalJson(raw))
+        return DecodedCard(card, canonicalJson(noSha))
     }
 
     // ---- 正規化 JSON ----

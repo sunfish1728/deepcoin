@@ -27,7 +27,7 @@ npm run dev
 - Android Chrome 等支援 Web NFC 的瀏覽器，可以點「讀取 NFC」再刷卡。
   Web NFC 需要安全來源（HTTPS 或本機 localhost）與使用者允許；iPhone 或不支援的瀏覽器可用刷卡網址。
 
-所有方式都驗證原本的 SHA-256。URL fragment 不會隨網頁請求送給主機，讀取後會從網址列移除。
+0.1.1 起所有方式都不再校驗卡片 SHA-256；舊卡的 sha 會忽略並移除。URL fragment 不會隨網頁請求送給主機，讀取後會從網址列移除。
 資料仍包含明文密鑰，和實體卡的既有設計相同。
 
 ## 沒裝 App 時開網頁

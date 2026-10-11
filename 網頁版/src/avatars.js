@@ -1,5 +1,6 @@
 import { unzipSync, strFromU8 } from 'fflate';
-import { httpUrl, sha256 } from './card.js';
+import { httpUrl } from './card.js';
+import {sha256} from './hash.js';
 import { avatarStore } from './storage.js';
 const LIMIT = 300 * 1024 * 1024;
 export function repoUrl(value) {

@@ -21,14 +21,14 @@ App 有三個分頁：
   - 寫入後回讀驗證；可選擇寫入後永久鎖定，會二次確認。
   - 即時估算資料大小，並顯示 NTAG213 / 215 / 216 是否放得下。
   - **檢測模型列表與餘額**（`net/ApiProbe.kt` + `ui/ProbeDialog.kt`）：單選預設模型、多選其他模型；美元餘額和到期日可以一鍵填入。
-- **讀卡**：在任何分頁刷卡都會跳到這裡。顯示欄位、驗證 SHA-256、密鑰預設遮住、可複製 JSON、可載入回寫卡頁。
+- **讀卡**：在任何分頁刷卡都會跳到這裡。顯示欄位、密鑰預設遮住、可複製 JSON、可載入回寫卡頁。
 - **設定檔**：本機用明文保存常用表單（SharedPreferences `tokencoin`），載入時會換新的卡片 ID。
 
 ## 程式結構（app/src/main/java/com/tokencoin/writer/）
 
 | 路徑 | 內容 |
 |---|---|
-| `card/TokenCard.kt` | 卡片格式編解碼與 SHA。**跟讀卡工具各有一份，要保持一致** |
+| `card/TokenCard.kt` | 卡片格式編解碼（無 SHA）。**跟讀卡工具各有一份，要保持一致** |
 | `card/Presets.kt` | 模型供應商、API 供應商、協議預設清單；預設 AAR；各晶片容量 |
 | `nfc/NfcIo.kt` | NFC 讀寫、格式化、鎖定 |
 | `net/ApiProbe.kt` | 模型列表與餘額查詢 |
@@ -76,3 +76,7 @@ App 有三個分頁：
 ## 2026-10-11 GitHub 發布
 
 本次程式碼已推上 deepcoin/main（f4b134b）。[v0.6.0 Release](https://github.com/sunfish1728/deepcoin/releases/tag/v0.6.0) 提供鯨幣 0.6.0 與同步寫卡工具 0.3.0 的 debug APK、SHA256SUMS.txt；原始碼倉庫不放 APK 或模型。
+
+## 2026-10-11，0.3.1
+
+同步移除卡片 SHA 計算與讀寫畫面的 SHA 顯示；舊 sha 忽略且不再寫回。每份 JSON 省 73 bytes，網頁連結同步縮短。12 項單元測試與 assembleDebug 通過；寫入後 NFC 回讀比對保留，真卡測試待完成。

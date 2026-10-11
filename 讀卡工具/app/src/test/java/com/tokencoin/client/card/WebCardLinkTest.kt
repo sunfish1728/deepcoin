@@ -14,7 +14,7 @@ class WebCardLinkTest {
         assertFalse(url.substringAfter('#').contains("=" .repeat(2)))
         val decoded = WebCardLink.decode(url)
         assertEquals(TokenCardCodec.canonicalJson(TokenCardCodec.fields(card)), TokenCardCodec.canonicalJson(TokenCardCodec.fields(decoded.card)))
-        assertEquals(ShaStatus.OK, decoded.shaStatus)
+        assertFalse(decoded.canonicalJson.contains("\"sha\""))
     }
     @Test fun manualOpenAppLink() {
         val payload = WebCardLink.create("https://example.com/", card).substringAfter('#')

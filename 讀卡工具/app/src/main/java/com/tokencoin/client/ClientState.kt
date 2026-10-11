@@ -98,10 +98,6 @@ class ClientState(
     var snack by mutableStateOf<String?>(null)
 
     fun acceptCard(d: DecodedCard) {
-        if (!d.shaStatus.acceptable()) {
-            message("卡片資料校驗失敗（SHA-256 不符），未載入")
-            return
-        }
         applyCard(d)
         // 刷卡：回到主頁，讓形象跳出來打招呼
         chatOpen = false

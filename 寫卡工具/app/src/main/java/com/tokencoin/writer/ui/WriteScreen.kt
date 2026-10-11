@@ -267,12 +267,11 @@ private fun SizeCard(size: Int?, errors: List<String>) {
                 Text("尚有欄位未完成", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.error)
                 errors.forEach { Text("• $it", style = MaterialTheme.typography.bodySmall) }
             } else {
-                Text("資料大小：$size bytes（含 SHA-256）", style = MaterialTheme.typography.titleSmall)
+                Text("資料大小：$size bytes", style = MaterialTheme.typography.titleSmall)
                 Text(
                     Presets.tagCapacities.joinToString("　") { (n, c) -> "$n ${if (size <= c) "✓" else "✗"}" },
                     style = MaterialTheme.typography.bodyMedium,
                 )
-                Text("SHA-256 會在寫入時依寫入時間計算", style = MaterialTheme.typography.bodySmall)
             }
         }
     }

@@ -1,8 +1,7 @@
 // Local-only fixture for manual browser QA. No real credentials or remote API.
 import {createServer} from 'node:http';
-import {canonical,sha256} from '../src/card.js';
+import {canonical} from '../src/card.js';
 const card={v:1,id:'a1b2c3d4',title:'鯨幣測試卡',vendor:'deepseek',model:'test-model',models:['*'],provider:'本機測試',proto:'openai',base:'http://127.0.0.1:18091/v1',key:'fake-local-test',iat:1760000000,balance_usd:'5.00'};
-card.sha=await sha256(new TextEncoder().encode(canonical(card)));
 const server=createServer(async(req,res)=>{
   res.setHeader('Access-Control-Allow-Origin','*');res.setHeader('Access-Control-Allow-Headers','content-type,authorization,x-api-key,anthropic-version,anthropic-dangerous-direct-browser-access,x-goog-api-key');
   if(req.method==='OPTIONS'){res.writeHead(204);return res.end();}

@@ -9,7 +9,7 @@
 - `src/app.js`：主頁、聊天、設定、卡片／角色管理與畫面狀態。
 - `src/style.css`：依 Android TcTheme / TcComponents 的色票、尺寸與排版；寬螢幕保留同一個 App 介面（最大 480px）。
 - `src/ui.js`：與 App 相同的 filled Material Icons、區段標籤、開關與分段選項。
-- `src/card.js`：正規化 JSON、SHA-256、Base64url 卡片連結，保留未知欄位。
+- `src/card.js`：正規化 JSON、Base64url 卡片連結，保留未知欄位。
 - `src/api.js`：四種協議、SSE、模型列表、餘額；直接連線，不增加中轉後端。
 - `src/avatars.js`：VRM 檢查、ZIP 匯入、形象庫、下載與形象選擇。
 - `src/storage.js`：localStorage 與 IndexedDB。
@@ -19,6 +19,9 @@
 - `tests/`：卡片、串流與角色純函式測試，及本機假 API。
 
 ## 開發紀錄
+
+- **2026-10-11，0.1.1**：卡片不再校驗 SHA，舊 sha 載入與分享時移除；設定頁移除 SHA 顯示。模型快取改用卡片 ID／協議／地址／密鑰組合，避免移除 SHA 後不同卡片共用錯誤模型列表。形象檔案校驗移至 src/hash.js 並保留。15 項測試與網頁建置通過。
+
 
 - **2026-10-11，0.1.0**：移植主頁、聊天、設定與 VRM 互動，不含寫卡。
   - 文字串流支援 openai / openai-responses / anthropic / gemini。

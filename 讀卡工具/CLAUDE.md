@@ -8,7 +8,7 @@
 - **刷卡開啟**：
   - App 沒在前景時：靠 manifest 的 `NDEF_DISCOVERED`（mimeType `application/vnd.tokencoin+json`）加上卡上的 AAR 開啟，`launchMode=singleTask`。
   - App 在前景時：用 reader mode 直接讀卡。
-- 讀卡會驗證 SHA-256，**不符就不載入**。
+- 0.6.1 起卡片不再寫入或校驗 SHA-256；舊卡 sha 忽略，複製與重寫時移除。
 - 最後一張卡以正規化 JSON 保存在 SharedPreferences `tokencoin_client`，重開 App 仍在。
 - 讀卡結果用 Snackbar 提示。
 - 底部三個分頁：
@@ -73,7 +73,7 @@
 
 | 路徑 | 內容 |
 |---|---|
-| `card/TokenCard.kt` | 卡片格式編解碼與 SHA。**跟寫卡工具各有一份，要保持一致** |
+| `card/TokenCard.kt` | 卡片格式編解碼（無 SHA）。**跟寫卡工具各有一份，要保持一致** |
 | `card/Presets.kt` | 模型供應商、API 供應商、協議預設清單（從寫卡工具複製） |
 | `nfc/NfcIo.kt` | 讀取：`read`、`decodeMessage`、`findCardRecord`；寫入：`buildMessage`、`write`（從寫卡工具移植） |
 | `net/ApiProbe.kt` | 模型列表與餘額查詢（從寫卡工具複製，另加「官方 API 不支援查餘額」的快速判斷） |
@@ -142,19 +142,22 @@
 
 - 測試用 AVD 是 `TokenCoin_Test_API34`，port 5556。使用者自己的 BattleCats 和 Medium_Phone 模擬器不要動。
 - 注入卡片的方法：
-  1. 產生 `shared_prefs/tokencoin_client.xml`，key 是 `card`，值是正規化 JSON（含 sha）。
+  1. 產生 `shared_prefs/tokencoin_client.xml`，key 是 `card`，值是正規化 JSON（不含 sha）。
   2. 用 `adb push` 推到 `/data/local/tmp`。
   3. 用 `run-as com.tokencoin.client` 複製進 App 資料夾。
   - Git Bash 下要設 `MSYS_NO_PATHCONV=1`，否則路徑會被轉換。
 - 本機模擬伺服器：卡片 `base` 設為 `http://10.0.2.2:<port>/v1`，模擬器就能連到電腦。
   - 模擬伺服器加上 new-api 風格的 `/v1/dashboard/billing/subscription`、`/usage` 和 `/v1/models`，就能測主頁餘額與寫卡頁的檢測。
 - 模擬器沒有 NFC，寫卡分頁會顯示「不支援 NFC」並停用寫入鍵；實際寫卡只能在真機測。
-- **模擬刷卡**（debug 版限定，0.5.0）：`adb shell "am start -n com.tokencoin.client/.MainActivity --es debug_card '<正規化卡片 JSON（含 sha）>'"`，走和 NFC 一樣的 acceptCard（含跳出動畫）。JSON 裡不要放中文，adb shell 會亂碼。
+- **模擬刷卡**（debug 版限定，0.5.0）：`adb shell "am start -n com.tokencoin.client/.MainActivity --es debug_card '<正規化卡片 JSON（不含 sha）>'"`，走和 NFC 一樣的 acceptCard（含跳出動畫）。JSON 裡不要放中文，adb shell 會亂碼。
 - 形象庫測試：用 `形象倉庫/deepcoin_avatar.py pack ... --host repo --private` 在 scratchpad 建一個本機形象庫，`python -m http.server 18090` 提供，卡片 avatar 填 `http://10.0.2.2:18090/deepcoin-avatars.json`。
   - ⚠ 模擬器的網路（Windows 主機）在伺服器關閉連線時常常吃掉最後幾個 bytes，下載會報 `unexpected end of stream`；續傳機制會重試，真機不會有這個問題。縮圖也可能因此顯示不出來。
 - 形象測試：`adb push model.vrm /sdcard/Download/`，在 App 裡用「匯入形象」選它。**模型檔不要放進專案或 APK**（示範模型禁止再配布）。
 
 ## 開發紀錄
+
+- **2026-10-11，0.6.1**：移除卡片 SHA 計算、驗證、設定頁與寫卡頁的 SHA 顯示。舊卡仍能載入，重寫／分享／複製時去掉 sha；新卡 JSON 省 73 bytes。同步 SPEC、獨立寫卡工具與網頁版；73 項單元測試與 assembleDebug 通過。形象檔案校驗保留，未用真卡測試。
+
 
 - **2026-10-11，0.6.0**：支援網頁版卡片回退。
   - 寫卡頁新增「網頁版網址」，保存在草稿與設定檔；網址尚未決定，預設留空。
@@ -220,3 +223,5 @@
 ## 2026-10-11 GitHub 發布
 
 本次程式碼已推上 deepcoin/main（f4b134b）。[v0.6.0 Release](https://github.com/sunfish1728/deepcoin/releases/tag/v0.6.0) 提供鯨幣 0.6.0 與同步寫卡工具 0.3.0 的 debug APK、SHA256SUMS.txt；原始碼倉庫不放 APK 或模型。
+
+0.6.1 檢查補充：最後一輪聊天自動標題測試曾等待逾時；未改聊天程式，單獨重跑完整鯨幣測試後 73 項全數通過並完成 APK 建置。

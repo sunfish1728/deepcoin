@@ -1,18 +1,32 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {canonical,sha256,decodeCard,encodePayload,decodePayload} from '../src/card.js';
+import {canonical,decodeCard,encodePayload,decodePayload,modelCacheKey} from '../src/card.js';
+import {sha256} from '../src/hash.js';
 import {chatRequest,history,events,chunk,streamChat} from '../src/api.js';
 import {inspect,resolveAvatar,repoUrl} from '../src/avatars.js';
 const c={v:1,id:'a1b2c3d4',title:'鯨幣😀',vendor:'deepseek',model:'deepseek-chat',provider:'測試',proto:'openai',base:'https://example.com/v1',key:'sk-test',iat:1760000000,x_future:{z:1,a:'保留'}};
-async function signed(card=c){return {...card,sha:await sha256(new TextEncoder().encode(canonical(card)))};}
 test('canonical JSON keeps Unicode, controls and nested unknown fields',()=>{
   assert.equal(canonical({z:['鯨😀','\b\f\n\r\t\u0001/'],a:{z:2,a:1}}),'{"a":{"a":1,"z":2},"z":["鯨😀","\\b\\f\\n\\r\\t\\u0001/"]}');
   assert.throws(()=>canonical({float:1.2}));assert.throws(()=>canonical({tooBig:Number.MAX_SAFE_INTEGER+1}));
 });
-test('web link roundtrip and SHA verification preserve full card',async()=>{
-  const card=await signed();const payload=encodePayload(card);assert.match(payload,/^[A-Za-z0-9_-]+$/);assert.deepEqual(await decodeCard(decodePayload(payload)),card);
-  await assert.rejects(decodeCard(canonical({...card,key:'tampered'})),/SHA/);
-  const {sha,...missing}=card;await assert.rejects(decodeCard(canonical(missing)));assert.throws(()=>decodePayload('!!!'));
+test('unsigned card and web link preserve unknown fields',async()=>{
+  const payload=encodePayload(c);assert.match(payload,/^[A-Za-z0-9_-]+$/);
+  assert.deepEqual(await decodeCard(decodePayload(payload)),c);
+  assert.throws(()=>decodePayload('!!!'));
+  await assert.rejects(decodeCard(canonical({...c,key:''})),/key/);
+  await assert.rejects(decodeCard(JSON.stringify({...c,x_float:1.2})),/整數/);
+});
+test('legacy sha is ignored and removed from JSON and links',async()=>{
+  for(const sha of ['a'.repeat(64),'invalid',null]) {
+    const old={...c,sha};
+    assert.deepEqual(await decodeCard(canonical(old)),c);
+    assert.deepEqual(await decodeCard(decodePayload(encodePayload(old))),c);
+  }
+  assert.equal(new TextEncoder().encode(canonical({...c,sha:'a'.repeat(64)})).length-new TextEncoder().encode(canonical(c)).length,73);
+});
+test('model caches remain distinct without card sha',()=>{
+  assert.equal(modelCacheKey({...c,title:'改名'}),modelCacheKey(c));
+  for(const changes of [{id:'eeeeeeee'},{base:'https://other.example/v1'},{key:'other-key'},{proto:'gemini'}])assert.notEqual(modelCacheKey({...c,...changes}),modelCacheKey(c));
 });
 test('history excludes errors and merges consecutive roles',()=>{
   assert.deepEqual(history([{role:'user',content:'a'},{role:'user',content:'b'},{role:'assistant',content:'bad',error:'fail'},{role:'assistant',content:''},{role:'assistant',content:'ok'}]),[{role:'user',content:'a\n\nb'},{role:'assistant',content:'ok'}]);

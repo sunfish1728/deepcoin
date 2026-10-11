@@ -16,10 +16,10 @@
 寫卡工具填入網頁版網址時，NDEF 改為：
 
 1. **URI 記錄放第一筆**：`https://<使用者部署的網址>/#card=<payload>`。
-2. 原本的 MIME `application/vnd.tokencoin+json` 記錄保留，JSON 與 SHA 規則不變。
+2. 原本的 MIME `application/vnd.tokencoin+json` 記錄保留，JSON 依下方規則正規化。
 3. **不附加 AAR**：AAR 在未安裝 App 時會開商店，不能達成網頁回退。
 
-`payload` 是完整正規化 JSON（包含 sha）的 UTF-8 位元組，經 Base64 URL-safe 編碼，不含 padding。
+`payload` 是完整正規化 JSON（不含 sha）的 UTF-8 位元組，經 Base64 URL-safe 編碼，不含 padding。
 卡片資料放在 URL fragment，不會隨 HTTP 請求送到網頁主機；網頁讀取後清除網址列中的 fragment。
 網址記錄與 MIME 各存一份資料，因此容量明顯增加，寫卡畫面必須估算整份 NDEF。
 網頁版網址為寫卡表單設定，不新增卡片 JSON 欄位。空白網址沿用原本 MIME + 可選 AAR，舊卡仍可讀。
@@ -50,41 +50,33 @@ App 同時處理 HTTPS 的 NDEF_DISCOVERED 與 ACTION_VIEW（Android 16 起網�
 | `apps` | string[] | | 電腦端建議套用的工具：`claude`（Claude Code）、`codex`、`gemini`（Gemini CLI） |
 | `iat` | int | ✓ | 寫入時間（Unix 秒） |
 | `exp` | int | | 到期時間（Unix 秒），只用於顯示和提醒 |
-| `balance_usd` | string | | 美元餘額，十進位字串（例如 `"5.00"`），寫卡當下的參考值。用字串是為了避免浮點數在不同語言序列化結果不同，導致 SHA 不一致 |
+| `balance_usd` | string | | 美元餘額，十進位字串（例如 `"5.00"`），寫卡當下的參考值。用字串保留小數精度，避免不同語言的浮點數序列化差異 |
 | `char` | string | | 虛擬形象：角色名稱 |
 | `char_id` | string | | 虛擬形象：角色 ID |
 | `avatar` | string | | 虛擬形象：`.vrm` / `.zip` 網址，或形象庫網址（GitHub 倉庫或 `deepcoin-avatars.json`，依 `char_id` 挑角色）。格式見 讀卡工具/AVATAR.md §6 |
 | `note` | string | | 備註 |
-| `sha` | string | ✓ | 完整性校驗，計算方式見下節 |
 
 - 值為空的欄位直接省略。
-- 讀取端遇到未知欄位要原樣保留，並納入 SHA 驗證。
+- 讀取端遇到未知欄位要原樣保留，舊版頂層 `sha` 除外：忽略並移除，不再校驗。
 - 擴充欄位建議加 `x_` 前綴。
-- `models` 的 `"*"` 不影響編解碼與 SHA，只是約定：不認得的讀取端會把它當成一個名叫 `*` 的模型，應該過濾掉。
+- `models` 的 `"*"` 不影響編解碼，只是約定：不認得的讀取端會把它當成一個名叫 `*` 的模型，應該過濾掉。
 - 舊版欄位 `quota`、`theme`、`persona` 已在 2026-10-10 移除；舊卡片讀取時會被當成未知欄位保留。
 
-## 正規化 JSON 與 SHA-256
+## 正規化 JSON
 
-1. 取出除了 `sha` 以外的所有欄位。
-2. 序列化成正規化 JSON：
-   - key 依字典序排列（遞迴套用）
-   - 不加任何空白
-   - 字串只跳脫 `"`、`\` 與控制字元（`\b \f \n \r \t`，其他用 `\u00xx` 小寫）
-   - 非 ASCII 字元和 `/` 原樣輸出
-   - 數字一律是整數
-3. `sha` = 對上述字串的 UTF-8 位元組做 SHA-256，輸出小寫十六進位。
-4. 卡片上存的是加入 `sha` 後，**再次正規化**的整份 JSON。
+自鯨幣 0.6.1、寫卡工具 0.3.1、網頁版 0.1.1 起，不計算、不驗證、不寫入卡片 SHA-256。
+格式版本仍為 v1；舊卡的頂層 `sha` 讀取時忽略，複製 JSON、分享連結與重寫時移除。
+其他未知欄位仍原樣保留。舊版鯨幣要求 SHA，讀取新卡前需更新至 0.6.1。
 
-參考實作（Python）：
+正規化規則：
+- key 依字典序排列（遞迴套用）。
+- 不加任何空白。
+- 字串只跳脫 `"`、`\\` 與控制字元（`\b \f \n \r \t`，其他用 `\u00xx` 小寫）；非 ASCII 字元和 `/` 原樣輸出。
+- 數字一律是整數。
+- 以 UTF-8 寫入 NDEF。
 
-```python
-import json, hashlib
-d = json.loads(payload); sha = d.pop("sha")
-canon = json.dumps(d, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
-assert hashlib.sha256(canon.encode()).hexdigest() == sha
-```
-
-> SHA-256 只用來檢查資料是否損毀或被誤改，**不是**防偽或加密：任何人都能重新計算。卡上的 API 密鑰是明文，任何人刷卡都讀得到，請用有限額、有期限的密鑰。
+移除 64 位十六進位 SHA 欄位，每份非空 JSON 省 73 bytes；網頁回退模式的 URI 也省下相應的 Base64url 資料。
+形象庫／下載檔案校驗和 APK 簽署憑證指紋不屬於卡片資料，維持原規則。
 
 ## 容量參考
 

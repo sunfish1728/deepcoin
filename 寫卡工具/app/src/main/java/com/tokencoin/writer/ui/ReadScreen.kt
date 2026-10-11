@@ -31,7 +31,6 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.tokencoin.writer.card.Presets
-import com.tokencoin.writer.card.ShaStatus
 import com.tokencoin.writer.nfc.ReadResult
 import java.time.Instant
 import java.time.ZoneId
@@ -66,11 +65,8 @@ private fun ReadResultView(r: ReadResult, state: AppState) {
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         if (d != null) {
-            val (label, color) = when (d.shaStatus) {
-                ShaStatus.OK -> "SHA-256 驗證通過 ✓" to MaterialTheme.colorScheme.primaryContainer
-                ShaStatus.MISMATCH -> "SHA-256 不符 ✗ 資料可能損毀或被竄改" to MaterialTheme.colorScheme.errorContainer
-                ShaStatus.MISSING -> "卡片未包含 SHA-256" to MaterialTheme.colorScheme.errorContainer
-            }
+            val label = "已讀取卡片"
+            val color = MaterialTheme.colorScheme.primaryContainer
             Card(colors = CardDefaults.cardColors(containerColor = color)) {
                 Text(label, Modifier.padding(16.dp).fillMaxWidth(), style = MaterialTheme.typography.titleMedium)
             }
@@ -98,7 +94,6 @@ private fun ReadResultView(r: ReadResult, state: AppState) {
                 if (c.avatar.isNotBlank()) KV("形象 URL", c.avatar, mono = true)
                 if (c.note.isNotBlank()) KV("備註", c.note)
                 if (c.extra.isNotEmpty()) KV("其他欄位", c.extra.keys.joinToString(", "))
-                KV("SHA-256", d.storedSha ?: "—", mono = true)
             }
 
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {

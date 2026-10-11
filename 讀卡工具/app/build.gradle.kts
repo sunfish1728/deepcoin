@@ -12,8 +12,8 @@ android {
         applicationId = "com.tokencoin.client"
         minSdk = 26
         targetSdk = 35
-        versionCode = 6
-        versionName = "0.6.0"
+        versionCode = 7
+        versionName = "0.6.1"
         manifestPlaceholders["tokenCoinWebHost"] = providers.gradleProperty("tokenCoinWebHost").getOrElse("deepcoin.invalid")
     }
 

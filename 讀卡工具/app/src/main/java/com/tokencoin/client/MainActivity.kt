@@ -30,7 +30,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import com.tokencoin.client.card.ShaStatus
 import com.tokencoin.client.nfc.NfcIo
 import com.tokencoin.client.net.BalanceTracker
 import com.tokencoin.client.net.ModelCatalog
@@ -195,4 +194,3 @@ class MainActivity : ComponentActivity(), NfcAdapter.ReaderCallback {
 }
 
 /** SHA 不符的卡片不採用。 */
-internal fun ShaStatus.acceptable() = this == ShaStatus.OK

@@ -10,9 +10,6 @@ export function canonical(value) {
   if (typeof value === 'object') return '{' + Object.keys(value).sort().map(k => JSON.stringify(k) + ':' + canonical(value[k])).join(',') + '}';
   throw new Error('卡片資料型別錯誤');
 }
-export async function sha256(bytes) {
-  return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', bytes)), x => x.toString(16).padStart(2, '0')).join('');
-}
 export async function decodeCard(raw) {
   if (raw.length > 65536) throw new Error('卡片資料過大');
   const card = JSON.parse(raw);
@@ -26,16 +23,20 @@ export async function decodeCard(raw) {
   if (!Number.isSafeInteger(card.iat)) throw new Error('寫入時間格式錯誤');
   if (card.models !== undefined && (!Array.isArray(card.models) || card.models.some(x => typeof x !== 'string'))) throw new Error('模型清單格式錯誤');
   const { sha, ...fields } = card;
-  if (typeof sha !== 'string' || (await sha256(encoder.encode(canonical(fields)))) !== sha.toLowerCase()) throw new Error('卡片資料校驗失敗（SHA-256 不符），未載入');
-  return card;
+  canonical(fields);
+  return fields;
 }
 export function httpUrl(value) {
   const url = new URL(value);
   if (!['https:', 'http:'].includes(url.protocol) || url.username || url.password) throw new Error('網址需為 http 或 https，且不能含帳號密碼');
   return url;
 }
+export function modelCacheKey(card) {
+  return JSON.stringify([card.id, card.proto, card.base, card.key]);
+}
 export function encodePayload(card) {
-  return btoa(Array.from(encoder.encode(canonical(card)), b => String.fromCharCode(b)).join('')).replaceAll('+', '-').replaceAll('/', '_').replace(/=+$/, '');
+  const { sha, ...fields } = card;
+  return btoa(Array.from(encoder.encode(canonical(fields)), b => String.fromCharCode(b)).join('')).replaceAll('+', '-').replaceAll('/', '_').replace(/=+$/, '');
 }
 export function decodePayload(payload) {
   if (!/^[A-Za-z0-9_-]+$/.test(payload) || payload.length > 90000) throw new Error('卡片連結格式錯誤');

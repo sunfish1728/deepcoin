@@ -339,7 +339,7 @@ private fun SizePanel(size: Int?, errors: List<String>) {
             Text("尚有欄位未完成", style = MaterialTheme.typography.titleSmall, color = c.danger)
             errors.forEach { Text("• $it", style = MaterialTheme.typography.bodySmall, color = c.textMuted) }
         } else {
-            Text("DATA · $size BYTES（含 SHA-256）", color = c.textMuted, style = TcLabelStyle)
+            Text("DATA · $size BYTES", color = c.textMuted, style = TcLabelStyle)
             Spacer(Modifier.height(6.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 Presets.tagCapacities.forEach { (n, cap) ->
@@ -347,8 +347,6 @@ private fun SizePanel(size: Int?, errors: List<String>) {
                     TcTag("$n ${if (ok) "✓" else "✗"}", color = if (ok) c.success else c.danger)
                 }
             }
-            Spacer(Modifier.height(4.dp))
-            Text("SHA-256 在寫入時依寫入時間計算", style = MaterialTheme.typography.bodySmall, color = c.textMuted)
         }
     }
 }
