@@ -72,3 +72,7 @@ App 有三個分頁：
 - [ ] 真機和真卡測試
 - [ ] 用真實密鑰驗證 ApiProbe
 - [ ] 預設清單裡的模型名稱可能過時，需要更新
+
+## 2026-10-11 GitHub 發布
+
+本次程式碼已推上 deepcoin/main（f4b134b）。[v0.6.0 Release](https://github.com/sunfish1728/deepcoin/releases/tag/v0.6.0) 提供鯨幣 0.6.0 與同步寫卡工具 0.3.0 的 debug APK、SHA256SUMS.txt；原始碼倉庫不放 APK 或模型。

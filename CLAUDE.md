@@ -113,6 +113,8 @@ cd <工具資料夾> && JAVA_HOME="$HOME/.gradle/jdks/eclipse_adoptium-17-amd64-
 
 ## 7. 全專案開發紀錄
 
+- **2026-10-11（0.6.0 發布）**：鯨幣 0.6.0、寫卡工具 0.3.0 與網頁版原始碼提交 f4b134b 已推上 deepcoin/main；公開 Release v0.6.0 提供 DeepCoin-0.6.0-debug.apk、TokenCoin-Writer-0.3.0-debug.apk 和 SHA256SUMS.txt。App 72 項、寫卡 11 項、網頁 13 項測試通過。形象庫三個 Release 遠端大小／SHA 已核對。網頁尚未部署、正式網址仍待設定。
+
 - **2026-10-11（形象庫發布）**：建立公開 https://github.com/sunfish1728/deepcoin-avatars，topic deepcoin-avatar。DeepSeek 鯨魚娘、白紫龍娘、Claude 娘三個角色包各發布 v1.0.0；索引含 SHA、大小、縮圖，README／索引／包內 credit／CREDITS.txt／Release 全部署名「木子惡魔」。原 VRM 內建禁止再配布，使用者另外明確確認「可發布，需署名」後，依該發布許可上傳，保留原檔不修改；許可差異見形象庫 PERMISSION.md。deepcoin 不放模型，本機獨立 checkout 放於被忽略的 形象倉庫/本機倉庫/。
 
 - **2026-10-11（介面還原）**：使用者要求網頁與手機 App 相同。網頁恢復 App 舞台＋底部卡片／聊天、整頁聊天與單欄設定，使用原始深淺色票、Material 圖示、字體與元件尺寸；寫卡省略，底部只有主頁／設定。模擬器畫面對照、示範 VRM、瀏覽器操作與 13 項測試完成；詳見 網頁版/CLAUDE.md。

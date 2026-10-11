@@ -216,3 +216,7 @@
 - [ ] 真機真卡測試寫卡分頁（寫入、回讀驗證、鎖定、寫完設為本機卡片）
 - [ ] 用真實密鑰驗證各家餘額查詢（DeepSeek、OpenRouter、SiliconFlow、Moonshot、中轉站）
 - [ ] RikkaHub 跳轉（擱置中；分頁已改為寫卡，日後要做可放在設定或主頁）
+
+## 2026-10-11 GitHub 發布
+
+本次程式碼已推上 deepcoin/main（f4b134b）。[v0.6.0 Release](https://github.com/sunfish1728/deepcoin/releases/tag/v0.6.0) 提供鯨幣 0.6.0 與同步寫卡工具 0.3.0 的 debug APK、SHA256SUMS.txt；原始碼倉庫不放 APK 或模型。
