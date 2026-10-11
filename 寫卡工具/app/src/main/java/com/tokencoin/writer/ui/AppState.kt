@@ -36,6 +36,7 @@ data class CardForm(
     val aarEnabled: Boolean = true,
     val aarPackage: String = "",
     val webUrl: String = "",
+    val hosted: Boolean = false,
 ) {
     /** 轉換並驗證；失敗時回傳錯誤訊息清單。 */
     fun toCard(now: Long = Instant.now().epochSecond): Pair<TokenCard?, List<String>> {
@@ -78,7 +79,7 @@ data class CardForm(
         put("key", key); put("apps", JSONArray(apps.toList())); put("exp", exp); put("balanceUsd", balanceUsd)
         put("char", char); put("charId", charId); put("avatar", avatar)
         put("note", note); put("aarEnabled", aarEnabled); put("aarPackage", aarPackage)
-        put("webUrl", webUrl)
+        put("webUrl", webUrl); put("hosted", hosted)
     }
 
     companion object {
@@ -92,7 +93,7 @@ data class CardForm(
             charId = o.optString("charId"), avatar = o.optString("avatar"),
             note = o.optString("note"), aarEnabled = o.optBoolean("aarEnabled", true),
             aarPackage = o.optString("aarPackage"),
-            webUrl = o.optString("webUrl"),
+            webUrl = o.optString("webUrl"), hosted = o.optBoolean("hosted", false),
         )
 
         fun fromCard(c: TokenCard) = CardForm(

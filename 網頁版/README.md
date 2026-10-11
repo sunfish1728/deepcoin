@@ -1,3 +1,12 @@
+# 鯨幣網頁版 0.2.0
+
+正式網址：https://sunfish1728.github.io/deepcoin-web/
+
+獨立原始碼倉庫：https://github.com/sunfish1728/deepcoin-web 。此資料夾保留本次版本的同步副本；之後網頁開發與部署以獨立倉庫為準。
+公開卡片設定另放 https://github.com/sunfish1728/deepcoin-web-API ，不含 API key；網頁讀取 v2 卡片的 ref，再在本機合併卡上 key。
+
+0.7.0 起寫卡網址留空自動使用上述 Pages，也可填自己的 HTTPS 網站；新卡只存一筆 URI。
+
 # 鯨幣網頁版
 
 手機 App 的網頁移植版，放在獨立的 `網頁版/`，**沒有寫卡功能**。
@@ -30,9 +39,9 @@ npm run dev
 0.1.1 起所有方式都不再校驗卡片 SHA-256；舊卡的 sha 會忽略並移除。URL fragment 不會隨網頁請求送給主機，讀取後會從網址列移除。
 資料仍包含明文密鑰，和實體卡的既有設計相同。
 
-## 沒裝 App 時開網頁
+## 舊版回退模式（0.6.x）
 
-兩個 Android 寫卡頁都新增 **網頁版網址**，保存在草稿／設定檔，不是卡片 JSON 欄位。
+0.6.x 的兩個 Android 寫卡頁新增 **網頁版網址**，保存在草稿／設定檔，不是卡片 JSON 欄位。
 
 - 網址留空：沿用 MIME + 可選 AAR，舊卡行為不變。
 - 網址有填：第一筆是 HTTPS URI，帶 Base64url 的卡片 JSON；第二筆保留 MIME；**不寫 AAR**。

@@ -79,7 +79,11 @@ class MainActivity : ComponentActivity(), NfcAdapter.ReaderCallback {
             }
             runOnUiThread { state.finishWrite(status) }
         } else {
-            val result = runCatching { NfcIo.read(tag) }
+            val result = runCatching {
+                val read = NfcIo.read(tag)
+                val decoded = read.decoded
+                if (decoded != null) try { read.copy(decoded = com.tokencoin.writer.net.HostedCards.resolve(applicationContext, decoded).first) } catch (e: Exception) { read.copy(decoded = null, error = e.message ?: "託管設定讀取失敗") } else read
+            }
             runOnUiThread {
                 result.onSuccess {
                     state.lastRead = it

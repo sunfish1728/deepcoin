@@ -1,6 +1,7 @@
 import '@fontsource-variable/roboto';
 import '@fontsource-variable/noto-sans-tc';
 import './style.css';
+import {resolveHosted} from './hosted.js';
 import { icon, iconButton, section, segmented, switchRow } from './ui.js';
 import DOMPurify from 'dompurify';
 import { marked } from 'marked';
@@ -55,7 +56,8 @@ function tab(value){state.tab=value;$('.shell').classList.toggle('chat-open',val
 function modal(title,body,submitLabel,onSubmit){const d=$('#dialog');if(d.open)d.close();d.classList.toggle('sheet',['你的形象','線上形象庫','對話設定'].includes(title));d.innerHTML=`<form id="modal-form"><div class="row between"><h2>${esc(title)}</h2><button type="button" data-action="close-dialog" class="ghost" aria-label="關閉">✕</button></div><div class="body">${body}</div>${submitLabel?`<div class="modal-actions"><button type="button" data-action="close-dialog">取消</button><button type="submit" class="primary">${esc(submitLabel)}</button></div>`:''}</form>`;d.showModal();$('#modal-form').onsubmit=e=>{e.preventDefault();safe(async()=>{await onSubmit(new FormData(e.target));d.close();});};}
 async function copy(text){await navigator.clipboard.writeText(text);toast('已複製');}
 async function safe(fn){try{await fn();}catch(e){toast(e.message||String(e));}}
-async function accept(raw){const card=await decodeCard(raw);state.controller?.abort();titleController?.abort();state.avatarSeq++;write('card',card);state.card=card;state.models=[];state.current=null;newConversation();renderHome();tab('home');toast('已讀取：'+(card.title||card.provider));
+let accepting=0;
+async function accept(raw){const sequence=++accepting;const card=await resolveHosted(raw,{onCached:()=>toast("託管連線失敗，使用上次成功讀取的設定")});if(sequence!==accepting)return;state.controller?.abort();titleController?.abort();state.avatarSeq++;write('card',card);state.card=card;state.models=[];state.current=null;newConversation();renderHome();tab('home');toast('已讀取：'+(card.title||card.provider));
   void safe(()=>chooseForCard());void safe(()=>refreshModels());if(state.settings.autoBalance)void safe(()=>refreshBalance(false));}
 async function refreshModels(force=false){const c=state.card;if(!c||!force&&!c.models?.includes('*'))return;state.models=state.modelCache[modelCacheKey(c)]||[];renderChat();const found=await api.models(c);if(state.card===c){state.models=found;state.modelCache[modelCacheKey(c)]=found;write('models',state.modelCache);renderChat();toast('已取得 '+found.length+' 個模型');}}
 async function refreshBalance(force=true){const c=state.card;if(!c)return;const old=state.balances[c.id];if(!force&&old&&Date.now()-old.at<300000)return;toast('正在查詢餘額…');try{const values=await api.balance(c);if(state.card!==c)return;state.balances[c.id]={values,at:Date.now()};}catch(e){if(state.card!==c)return;state.balances[c.id]={...old,at:Date.now(),error:e.message};}write('balances',state.balances);renderHome();if(state.tab==='settings')renderSettings();}
@@ -80,7 +82,7 @@ function renderSettings(){const c=state.card;
  section('APPEARANCE · 外觀','<span class="eyebrow">主題</span>'+segmented('theme',[['system','跟隨系統'],['light','淺色'],['dark','深色']],state.settings.theme))+
  section('AVATAR · 虛擬形象',`<div class="row between"><div><div>${esc(state.active?.name||'沒有形象')}</div><span class="muted">已安裝 ${state.avatars.length} 個</span></div><button data-action="avatars">管理形象</button></div><span class="eyebrow">主頁預設鏡頭</span>`+segmented('camera',[['full','全身'],['bust','半身'],['face','特寫']],state.settings.camera)+switchRow('touch','觸控互動','點擊反應、摸頭、拖曳轉身、雙指縮放',state.settings)+switchRow('avatarInChat','聊天時顯示形象面板','也可以在聊天畫面右上角切換',state.settings))+
  section('CHAT · 聊天',`<div class="row between"><span>對話紀錄 ${state.conversations.length} 段</span><button data-action="clear-chat" ${state.conversations.length?'':'disabled'}>全部清除</button></div><p class="muted">對話只存在本機，不包含卡片密鑰。</p><div class="row"><button data-action="export-chat">匯出對話</button><button data-action="import-chat">匯入對話</button><button data-action="models" ${c?'':'disabled'}>重新取得模型</button></div>`+switchRow('autoTitle','自動產生對話標題','會使用目前卡片的 API',state.settings))+
- section('ABOUT · 關於',info('版本','鯨幣網頁版 0.1.1')+info('卡片格式','v1 · '+MIME,true)+info('角色包格式','v1（VRM 0.x / 1.0）')+info('開源元件','three.js、three-vrm、Material Icons · marked、DOMPurify'));
+ section('ABOUT · 關於',info('版本','鯨幣網頁版 0.2.0')+info('卡片格式','v1 · '+MIME,true)+info('角色包格式','v1（VRM 0.x / 1.0）')+info('開源元件','three.js、three-vrm、Material Icons · marked、DOMPurify'));
 }
 function syncStageUi(){$('#stage-tools').hidden=!state.active;$('#avatar-caption').hidden=!state.active;$('#avatar-caption').innerHTML=state.active?'<span class="status-dot ready"></span> '+esc(state.active.name):'';$('#chat-avatar-toggle').hidden=!state.active;$('#chat-avatar-toggle').classList.toggle('selected',state.settings.avatarInChat);$('#stage-tools').querySelectorAll('[data-action=camera]').forEach(b=>{b.classList.toggle('selected',b.dataset.value===state.settings.camera);b.setAttribute('aria-pressed',String(b.dataset.value===state.settings.camera));});}
 function loadStage(){syncStageUi();if(modelUrl){URL.revokeObjectURL(modelUrl);modelUrl=null;}tc('clear');if(state.active){modelUrl=URL.createObjectURL(state.active.blob);tc('load',modelUrl,state.active.manifest);}$('#stage-empty').hidden=!!state.active;tc('interactive',state.settings.touch);}

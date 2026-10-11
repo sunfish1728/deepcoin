@@ -12,3 +12,7 @@ __pycache__/
 形象倉庫/files/
 形象倉庫/thumbs/
 形象倉庫/本機倉庫/
+
+# 獨立網頁／設定倉庫與本機打包授權
+本機倉庫/
+hosting.properties

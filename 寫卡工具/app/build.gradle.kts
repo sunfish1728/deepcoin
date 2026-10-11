@@ -1,8 +1,16 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
 }
+
+val hostingProperties = Properties().apply {
+    val config = rootProject.file("../hosting.properties")
+    if (config.exists()) config.inputStream().use { load(it) }
+}
+val hostingToken = hostingProperties.getProperty("token", "")
 
 android {
     namespace = "com.tokencoin.writer"
@@ -12,8 +20,9 @@ android {
         applicationId = "com.tokencoin.writer"
         minSdk = 26
         targetSdk = 35
-        versionCode = 4
-        versionName = "0.3.1"
+        versionCode = 5
+        versionName = "0.4.0"
+        buildConfigField("String", "HOSTING_TOKEN", "\"" + hostingToken.replace("\\", "\\\\").replace("\"", "\\\"") + "\"")
     }
 
     buildTypes {
@@ -30,6 +39,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 

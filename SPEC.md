@@ -1,8 +1,20 @@
-# Token幣 卡片格式 v1
+# Token幣 卡片格式 v1／v2
 
 寫卡工具（Android）、Token幣 客戶端（Android）、CC Switch 改版（PC）、日後的虛擬形象配套軟體，全部依此規格讀寫。
 
-## NDEF 結構
+## 0.7.0 託管模式與預設網站（2026-10-11）
+
+預設網站為 https://sunfish1728.github.io/deepcoin-web/；寫卡網址空白使用此預設，自訂 HTTPS 網址仍可用。新寫入的卡只保留一筆 URI（完整卡片仍為 #card=Base64url JSON），不再重複 MIME／AAR；讀取端兼容舊 MIME 卡。
+
+外部託管為可選模式。卡上 JSON 為 v2：
+
+`{"v":2,"id":"8位卡片ID","key":"卡片API key","ref":"HTTPS 設定直連網址"}`
+
+卡上仍經 Base64url 放在 #card= 中，key 不送往設定託管站。設定檔為原 v1 完整資料去掉頂層 key、sha、ref，其他欄位保留；必須先確認設定下載內容吻合，才允許寫入。新上傳使用新檔名，不覆蓋他人／舊卡。設定內 v 必須為1、id必須和卡片相同、不可含 key 或 ref，讀取後用卡片 key 合併。HTTPS 下載上限64KiB，失敗只使用同一 ref 的已驗證快取；首次失敗不套用。
+
+公開設定放 sunfish1728/deepcoin-web-API；App 共用 token 只授權此倉庫，透過本機忽略檔 hosting.properties 注入 APK，原始碼不含 token。使用者已明確接受 APK token 可被取出及倉庫可能被修改；不能聲稱授權只可由 App 使用。App 不把卡片 key 傳給 GitHub 上傳介面。
+
+## 舊版 NDEF 結構
 
 | 順序 | 記錄 | 說明 |
 |---|---|---|
@@ -11,7 +23,7 @@
 
 讀取端應依 MIME 類型尋找記錄，不要假設它在第幾筆。
 
-## 網頁回退模式（2026-10-11）
+## 舊版 0.6.0／0.6.1 網頁回退模式（歷史相容）
 
 寫卡工具填入網頁版網址時，NDEF 改為：
 
@@ -27,13 +39,13 @@
 未安裝 App 時由手機開啟 HTTPS 網頁（可能需要點擊系統通知）。已安裝 App 若要自動開啟，
 需在編譯時設定 `-PtokenCoinWebHost=<網域>`，並在該網域部署 Android Digital Asset Links。
 App 同時處理 HTTPS 的 NDEF_DISCOVERED 與 ACTION_VIEW（Android 16 起網頁 NFC 使用 ACTION_VIEW）。
-網域尚未定案時預設 `deepcoin.invalid`，不攔截其他網站。網頁另外提供使用者點擊的
+0.6.x 網域未定時預設 `deepcoin.invalid`；0.7.0 預設只比對 `sunfish1728.github.io/deepcoin-web/`，GitHub 專案 Pages 無法提供帳號網域根目錄的 Digital Asset Links，因此自動開 App 仍視 Android 設定而定。網頁另外提供使用者點擊的
 `tokencoin://card#card=<payload>`「用 App 開啟」入口。
 
 參考：[Android NFC](https://developer.android.com/develop/connectivity/nfc/nfc)、
 [App Links](https://developer.android.com/training/app-links/verify-android-applinks)。
 
-## 欄位
+## 完整 v1 欄位
 
 | key | 型別 | 必填 | 說明 |
 |---|---|---|---|

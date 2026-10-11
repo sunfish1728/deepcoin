@@ -35,11 +35,8 @@ data class WriteResult(val info: TagInfo, val bytes: Int, val locked: Boolean)
 object NfcIo {
 
     fun buildMessage(card: TokenCard, aarPackage: String?, webUrl: String = ""): NdefMessage {
-        val records = mutableListOf<NdefRecord>()
-        if (webUrl.isNotBlank()) records += NdefRecord.createUri(com.tokencoin.writer.card.WebCardLink.create(webUrl, card))
-        records += NdefRecord.createMime(TokenCard.MIME, TokenCardCodec.encode(card))
-        if (webUrl.isBlank() && !aarPackage.isNullOrBlank()) records += NdefRecord.createApplicationRecord(aarPackage.trim())
-        return NdefMessage(records.toTypedArray())
+        // 新卡只存一份 URI；空網址自動使用鯨幣 Pages。
+        return NdefMessage(arrayOf(NdefRecord.createUri(com.tokencoin.writer.card.WebCardLink.create(webUrl, card))))
     }
 
     fun info(tag: Tag): TagInfo {
@@ -105,10 +102,14 @@ object NfcIo {
 
         val summaries = msg.records.map(::describe)
         val record = findCardRecord(msg)
-            ?: return ReadResult(info, msg.byteArrayLength, null, "卡片上沒有 Token幣 資料", summaries)
+        if (record == null && msg.records.any { it.toUri()?.fragment?.startsWith("card=") == true }) {
+            return try { ReadResult(info, msg.byteArrayLength, decodeMessage(msg), null, summaries) }
+            catch (e: Exception) { ReadResult(info, msg.byteArrayLength, null, e.message, summaries) }
+        }
+        val cardRecord = record ?: return ReadResult(info, msg.byteArrayLength, null, "卡片上沒有 Token幣 資料", summaries)
 
         return try {
-            ReadResult(info, msg.byteArrayLength, TokenCardCodec.decode(record.payload), null, summaries)
+            ReadResult(info, msg.byteArrayLength, TokenCardCodec.decode(cardRecord.payload), null, summaries)
         } catch (e: Exception) {
             ReadResult(info, msg.byteArrayLength, null, "Token幣 資料損毀：${e.message}", summaries)
         }
@@ -120,7 +121,12 @@ object NfcIo {
 
     /** 從 NdefMessage（例如 NDEF_DISCOVERED intent）解析 Token幣；沒有或損毀時拋例外。 */
     fun decodeMessage(msg: NdefMessage): DecodedCard {
-        val record = findCardRecord(msg) ?: throw IOException("卡片上沒有 Token幣 資料")
+        val record = findCardRecord(msg)
+        if (record == null) {
+            val uri = msg.records.mapNotNull { it.toUri()?.toString() }.firstOrNull { it.contains("#card=") }
+                ?: throw IOException("卡片上沒有鯨幣資料")
+            return com.tokencoin.writer.card.WebCardLink.decode(uri)
+        }
         return TokenCardCodec.decode(record.payload)
     }
 
