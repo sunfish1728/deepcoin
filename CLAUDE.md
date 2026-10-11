@@ -113,6 +113,8 @@ cd <工具資料夾> && JAVA_HOME="$HOME/.gradle/jdks/eclipse_adoptium-17-amd64-
 
 ## 7. 全專案開發紀錄
 
+- **2026-10-11（0.6.1 發布完成）**：程式碼 eda7244 已推上 deepcoin/main；[v0.6.1](https://github.com/sunfish1728/deepcoin/releases/tag/v0.6.1) 公開提供 DeepCoin-0.6.1-debug.apk、TokenCoin-Writer-0.3.1-debug.apk、SHA256SUMS.txt，遠端資產大小／雜湊已與本機核對。
+
 - **2026-10-11（0.6.1）**：依使用者要求移除卡片 SHA-256，JSON 每份減少 73 bytes；鯨幣 0.6.1、寫卡工具 0.3.1、網頁版 0.1.1 同步。舊卡 sha 忽略，複製／分享／重寫時移除；其他未知欄位保留。形象下載校驗與 APK 簽署維持。測試：鯨幣 73、寫卡 12、網頁 15 項通過，三端建置成功。新卡需新版 App；真機 NFC 待驗證。
 
 - **2026-10-11（0.6.0 發布）**：鯨幣 0.6.0、寫卡工具 0.3.0 與網頁版原始碼提交 f4b134b 已推上 deepcoin/main；公開 Release v0.6.0 提供 DeepCoin-0.6.0-debug.apk、TokenCoin-Writer-0.3.0-debug.apk 和 SHA256SUMS.txt。App 72 項、寫卡 11 項、網頁 13 項測試通過。形象庫三個 Release 遠端大小／SHA 已核對。網頁尚未部署、正式網址仍待設定。

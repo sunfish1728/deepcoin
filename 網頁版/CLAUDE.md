@@ -51,3 +51,5 @@
 - API 與模型來源需要 CORS；沒有代理、Range 續傳或角色自動更新。
 - Web NFC 只在支援的瀏覽器／裝置可用；可用網址與 JSON 替代。
 - 網頁版資料和 Android App 各自獨立。
+
+0.6.1 發布完成：程式碼 eda7244 已推上 deepcoin/main，[GitHub Release v0.6.1](https://github.com/sunfish1728/deepcoin/releases/tag/v0.6.1) 已公開；APK 上傳大小／雜湊核對成功。網頁只更新原始碼，尚未部署。

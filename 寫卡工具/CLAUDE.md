@@ -80,3 +80,5 @@ App 有三個分頁：
 ## 2026-10-11，0.3.1
 
 同步移除卡片 SHA 計算與讀寫畫面的 SHA 顯示；舊 sha 忽略且不再寫回。每份 JSON 省 73 bytes，網頁連結同步縮短。12 項單元測試與 assembleDebug 通過；寫入後 NFC 回讀比對保留，真卡測試待完成。
+
+0.6.1 發布完成：程式碼 eda7244 已推上 deepcoin/main，[GitHub Release v0.6.1](https://github.com/sunfish1728/deepcoin/releases/tag/v0.6.1) 已公開；APK 上傳大小／雜湊核對成功。網頁只更新原始碼，尚未部署。
