@@ -93,3 +93,5 @@ App 有三個分頁：
 - 驗證：鯨幣 78 項、獨立寫卡 17 項、網頁 20 項測試通過，兩份 APK 與網頁建置成功。專用 token 實際 PUT 201、公開 GET 200，公開檔不含 API key；Pages 部署成功、瀏覽器與 Android API34 模擬器都已載入公開 v2 設定並合併假密鑰。未用真實 API key 或真卡測試 NFC。
 - GitHub 專案 Pages 無法提供帳號網域根目錄的 assetlinks；Android 是否自動進 App 視系統連結設定而定，網頁保留「用 App 開啟」。64 字元 key 的託管範例 NDEF 約343 bytes（不含標籤 TLV），實際以寫卡頁容量為準。
 - 本機重建：在專案根目錄的 hosting.properties 設 token=專用授權；此檔已被 git 忽略。沒有此檔仍可讀託管卡，只有上傳功能不可用；不要把 token 放進網頁或版本庫。
+
+發布：公開 https://github.com/sunfish1728/deepcoin/releases/tag/v0.7.0 ，來源提交44efe7b；遠端 APK 大小與SHA均已核對。原始碼變更頁 https://github.com/sunfish1728/deepcoin/pull/1 （尚未合併main）。

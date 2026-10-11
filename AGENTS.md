@@ -74,7 +74,7 @@ GitHub：https://github.com/sunfish1728/deepcoin （公開）。
 
 | 元件 | 狀態 | 詳見 |
 |---|---|---|
-| 卡片格式 v1 | ✅ 不再寫入／校驗卡片 SHA，舊卡可讀 | SPEC.md |
+| 卡片格式 v1／v2 | ✅ 完整 v1／託管 v2；不寫入卡片 SHA，舊卡可讀 | SPEC.md |
 | 網頁版（鯨幣） | ✅ 0.2.0：獨立 deepcoin-web + Pages 已部署，支援託管卡；不含寫卡，API／模型需 CORS | 網頁版/CLAUDE.md |
 | 寫卡工具 | ✅ 0.4.0：外部託管、單 URI、預設 Pages；真機 NFC 待驗證 | 寫卡工具/CLAUDE.md |
 | 讀卡工具（鯨幣 客戶端） | ✅ 0.7.0：外部託管、讀取與快取、預設 Pages；真機 NFC 待驗證 | 讀卡工具/CLAUDE.md |
@@ -112,6 +112,8 @@ cd <工具資料夾> && JAVA_HOME="$HOME/.gradle/jdks/eclipse_adoptium-17-amd64-
 ```
 
 ## 7. 全專案開發紀錄
+
+- **2026-10-11（0.7.0 發布完成）**：來源提交 44efe7b，公開 [v0.7.0](https://github.com/sunfish1728/deepcoin/releases/tag/v0.7.0) 提供 DeepCoin-0.7.0-debug.apk、TokenCoin-Writer-0.4.0-debug.apk、SHA256SUMS.txt；遠端大小／SHA 與本機一致。來源變更已推 codex/hosted-cards-0.7.0，變更頁 https://github.com/sunfish1728/deepcoin/pull/1 ，尚未合併 main。網頁獨立倉庫 main 的 Pages 部署成功。
 
 - **2026-10-11（0.7.0）**：建立獨立公開 deepcoin-web 並部署 https://sunfish1728.github.io/deepcoin-web/；設定另存 deepcoin-web-API。寫卡新增可選外部託管，排除 API key，上傳回讀成功才寫入 v2 連結卡；刷卡先抓設定並本機合併 key，同網址已驗證快取可離線用。兩 Android 與網頁同步 SPEC.md，新卡單 URI、不再重複 MIME；網址空白預設 Pages，仍可自訂。使用者明確接受共用 APK token 可被取出及資料倉庫可能被修改，token 只綁定資料倉庫 Contents 讀寫；以忽略的 hosting.properties 注入，不提交原始碼。鯨幣78、寫卡17、網頁20項測試通過；公開上傳／讀回、Pages、瀏覽器與模擬器 v2 載入已驗證；真卡 NFC 待測。詳見各元件 CLAUDE.md。
 
