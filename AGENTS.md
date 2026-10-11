@@ -136,6 +136,8 @@ cd <工具資料夾> && JAVA_HOME="$HOME/.gradle/jdks/eclipse_adoptium-17-amd64-
   - 讀卡工具 0.5.0：改名鯨幣、models `*`（SPEC 補充）、形象庫格式與 形象倉庫/ 工具、刷卡跳出形象；推上 GitHub `sunfish1728/deepcoin`。
   - Codex 的叫用方式：子代理 `codex:codex-rescue` 這次卡住、沒有產生任何工作。改為直接執行 `node <plugin>/scripts/codex-companion.mjs task --write "<prompt>"`，在背景跑，成功。Codex 的沙箱無法寫入 `~/.gradle`，會把快取複製到專案的 build 資料夾自建（可能好幾 GB），事後要停掉它的 Gradle daemon 再刪除。
 
+- **2026-10-11（README 擴寫）**：重新整理對外說明，補充專案想法、刷卡流程、App／網頁差異、v1／v2 託管取捨、角色機制與木子惡魔署名、四個倉庫分工、資料與共用授權邊界、0.7.0 建置方式及已驗證／尚未實作範圍。核對文件相對連結、JSON 範例與 Markdown 格式；本次未改程式或重新發布 APK。
+
 ## 8. 平行開發規則
 
 - 開工前，先在 §4 把要做的元件標成「🔧 進行中（對話主題）」。
