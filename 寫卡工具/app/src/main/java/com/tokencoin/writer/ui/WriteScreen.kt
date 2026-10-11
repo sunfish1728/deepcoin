@@ -70,11 +70,7 @@ fun WriteScreen(state: AppState) {
     var probe by remember { mutableStateOf<ProbeResult?>(null) }
     val scope = rememberCoroutineScope()
 
-    var uploading by remember { mutableStateOf(false) }
-    var hostingStatus by remember { mutableStateOf("") }
-    var uploaded by remember(f) { mutableStateOf<com.tokencoin.writer.card.TokenCard?>(null) }
-    val (fullCard, errors) = remember(f) { f.toCard() }
-    val card = if (f.hosted) uploaded else fullCard
+    val (card, errors) = remember(f) { f.toCard() }
     val aar = f.aarPackage.trim().ifEmpty { Presets.DEFAULT_AAR }.takeIf { f.aarEnabled }
     val size = card?.let { NfcIo.buildMessage(it, aar, f.webUrl).byteArrayLength }
 
@@ -204,21 +200,6 @@ fun WriteScreen(state: AppState) {
             Field("備註", f.note, { set { copy(note = it) } }, singleLine = false)
             Field("網頁版網址（未安裝 App 時使用）", f.webUrl, { set { copy(webUrl = it) } }, keyboard = KeyboardType.Uri,
                 hint = "留空使用 https://sunfish1728.github.io/deepcoin-web/；也可填自己的 HTTPS 網址。只存一筆網址。")
-            SwitchRow("外部託管", "除 API key 外的卡片設定公開託管至 GitHub", f.hosted) { set { copy(hosted = it) } }
-            if (f.hosted) {
-                OutlinedButton(onClick = {
-                    val source = fullCard ?: return@OutlinedButton
-                    uploading = true; hostingStatus = "正在上傳並核對…"
-                    scope.launch {
-                        try {
-                            val result = withContext(Dispatchers.IO) { com.tokencoin.writer.net.HostedCards.upload(source) }
-                            uploaded = result; hostingStatus = "已託管，可寫入卡片"
-                        } catch (e: Exception) { hostingStatus = e.message ?: "上傳失敗" }
-                        finally { uploading = false }
-                    }
-                }, enabled = fullCard != null && !uploading) { Text(if (uploading) "正在上傳…" else "上傳託管設定") }
-                if (hostingStatus.isNotBlank()) Text(hostingStatus)
-            }
         }
 
         SizeCard(size, errors)

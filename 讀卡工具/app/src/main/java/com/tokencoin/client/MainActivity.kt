@@ -171,12 +171,12 @@ class MainActivity : ComponentActivity(), NfcAdapter.ReaderCallback {
         hostedRead?.cancel()
         hostedRead = engineScope.launch {
             try {
-                if (d.card.v == 2) state.message("正在讀取託管設定…")
-                val (resolved, cached) = withContext(Dispatchers.IO) { com.tokencoin.client.net.HostedCards.resolve(applicationContext, d) }
+                if (d.card.v == 2) state.message("正在轉換舊卡設定…")
+                val (resolved, cached) = withContext(Dispatchers.IO) { com.tokencoin.client.net.LegacyCards.resolve(applicationContext, d) }
                 state.acceptCard(resolved)
-                if (cached) state.message("託管連線失敗，使用上次成功讀取的設定")
+                if (cached) state.message("舊託管卡已轉為完整資料，請重新寫卡")
             } catch (e: CancellationException) { throw e }
-            catch (e: Exception) { state.message(e.message ?: "託管設定讀取失敗") }
+            catch (e: Exception) { state.message(e.message ?: "舊卡設定轉換失敗") }
         }
     }
 

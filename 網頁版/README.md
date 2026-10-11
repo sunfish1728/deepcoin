@@ -1,9 +1,11 @@
-# 鯨幣網頁版 0.2.0
+# 鯨幣網頁版 0.2.1
 
 正式網址：https://sunfish1728.github.io/deepcoin-web/
 
 獨立原始碼倉庫：https://github.com/sunfish1728/deepcoin-web 。此資料夾保留本次版本的同步副本；之後網頁開發與部署以獨立倉庫為準。
-公開卡片設定另放 https://github.com/sunfish1728/deepcoin-web-API ，不含 API key；網頁讀取 v2 卡片的 ref，再在本機合併卡上 key。
+新版直接讀取完整 v1；舊 v2 使用本機快取或內附公開設定備份轉換，不再上傳。deepcoin-web-API 倉庫依使用者指示保留。
+
+開啟網站、刷卡與新增對話只產生暫存草稿，送出第一則訊息才保存紀錄；既有空白紀錄會清理。部署時執行 `node scripts/stage-avatar-packages.js`，核對三個木子惡魔角色包後放入 dist，提供同來源下載。
 
 0.7.0 起寫卡網址留空自動使用上述 Pages，也可填自己的 HTTPS 網站；新卡只存一筆 URI。
 

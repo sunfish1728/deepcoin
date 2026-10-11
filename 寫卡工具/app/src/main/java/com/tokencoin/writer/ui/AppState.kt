@@ -79,7 +79,7 @@ data class CardForm(
         put("key", key); put("apps", JSONArray(apps.toList())); put("exp", exp); put("balanceUsd", balanceUsd)
         put("char", char); put("charId", charId); put("avatar", avatar)
         put("note", note); put("aarEnabled", aarEnabled); put("aarPackage", aarPackage)
-        put("webUrl", webUrl); put("hosted", hosted)
+        put("webUrl", webUrl)
     }
 
     companion object {
@@ -93,7 +93,7 @@ data class CardForm(
             charId = o.optString("charId"), avatar = o.optString("avatar"),
             note = o.optString("note"), aarEnabled = o.optBoolean("aarEnabled", true),
             aarPackage = o.optString("aarPackage"),
-            webUrl = o.optString("webUrl"), hosted = o.optBoolean("hosted", false),
+            webUrl = o.optString("webUrl"),
         )
 
         fun fromCard(c: TokenCard) = CardForm(

@@ -1,16 +1,8 @@
-import java.util.Properties
-
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
 }
-
-val hostingProperties = Properties().apply {
-    val config = rootProject.file("../hosting.properties")
-    if (config.exists()) config.inputStream().use { load(it) }
-}
-val hostingToken = hostingProperties.getProperty("token", "")
 
 android {
     namespace = "com.tokencoin.client"
@@ -20,9 +12,8 @@ android {
         applicationId = "com.tokencoin.client"
         minSdk = 26
         targetSdk = 35
-        versionCode = 8
-        versionName = "0.7.0"
-        buildConfigField("String", "HOSTING_TOKEN", "\"" + hostingToken.replace("\\", "\\\\").replace("\"", "\\\"") + "\"")
+        versionCode = 9
+        versionName = "0.7.1"
         manifestPlaceholders["tokenCoinWebHost"] = providers.gradleProperty("tokenCoinWebHost").getOrElse("sunfish1728.github.io")
     }
 

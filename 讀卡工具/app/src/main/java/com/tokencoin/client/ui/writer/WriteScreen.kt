@@ -94,11 +94,7 @@ fun WriteScreen(
     var probe by remember { mutableStateOf<ProbeResult?>(null) }
     val scope = rememberCoroutineScope()
 
-    var uploading by remember { mutableStateOf(false) }
-    var hostingStatus by remember { mutableStateOf("") }
-    var uploaded by remember(f) { mutableStateOf<TokenCard?>(null) }
-    val (fullCard, errors) = remember(f) { f.toCard() }
-    val card = if (f.hosted) uploaded else fullCard
+    val (card, errors) = remember(f) { f.toCard() }
     val aar = f.aarPackage.trim().ifEmpty { Presets.DEFAULT_AAR }.takeIf { f.aarEnabled }
     val size = card?.let { NfcIo.buildMessage(it, aar, f.webUrl).byteArrayLength }
 
@@ -230,25 +226,9 @@ fun WriteScreen(
             FormField("備註", f.note, { set { copy(note = it) } }, singleLine = false)
             FormField("網頁版網址（未安裝 App 時使用）", f.webUrl, { set { copy(webUrl = it) } }, keyboard = KeyboardType.Uri,
                 hint = "留空使用 https://sunfish1728.github.io/deepcoin-web/；也可填自己的 HTTPS 網站。卡片只存一筆網址，不重複存資料。")
-            TcSwitchRow("外部託管", "除 API key 外的卡片設定公開託管至 GitHub", f.hosted, { set { copy(hosted = it) } })
-            if (f.hosted) {
-                TcButton(if (uploading) "正在上傳並核對…" else "上傳託管設定", {
-                    val source = fullCard ?: return@TcButton
-                    uploading = true; hostingStatus = "正在上傳…"
-                    scope.launch {
-                        try {
-                            val result = withContext(Dispatchers.IO) { com.tokencoin.client.net.HostedCards.upload(source) }
-                            uploaded = result; hostingStatus = "已託管，可寫入卡片"
-                        } catch (e: Exception) { hostingStatus = e.message ?: "上傳失敗" }
-                        finally { uploading = false }
-                    }
-                }, enabled = fullCard != null && !uploading)
-                if (hostingStatus.isNotBlank()) Text(hostingStatus, color = c.textMuted)
-                if (uploaded == null) Text("先上傳並確認設定，再寫入卡片。", color = c.textMuted)
-            }
         }
 
-        SizePanel(size, if (f.hosted && fullCard != null && card == null) listOf("請先上傳託管設定") else errors)
+        SizePanel(size, errors)
 
         TcSwitchRow("寫入後永久鎖定", "鎖定後卡片無法再修改，無法復原", w.lockAfterWrite, { w.lockAfterWrite = it })
 

@@ -35,6 +35,7 @@ data class WriteResult(val info: TagInfo, val bytes: Int, val locked: Boolean)
 object NfcIo {
 
     fun buildMessage(card: TokenCard, aarPackage: String?, webUrl: String = ""): NdefMessage {
+        require(card.v == 1 && card.ref.isBlank()) { "請先轉成完整資料再寫卡" }
         // 新卡只存一份 URI；空網址自動使用鯨幣 Pages。
         return NdefMessage(arrayOf(NdefRecord.createUri(com.tokencoin.writer.card.WebCardLink.create(webUrl, card))))
     }
