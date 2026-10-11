@@ -35,9 +35,12 @@ data class WriteResult(val info: TagInfo, val bytes: Int, val locked: Boolean)
 /** 讀卡與寫卡（寫卡部分移植自寫卡工具，2026-10-10）。 */
 object NfcIo {
 
-    fun buildMessage(card: TokenCard, aarPackage: String?): NdefMessage {
-        val records = mutableListOf(NdefRecord.createMime(TokenCard.MIME, TokenCardCodec.encode(card)))
-        if (!aarPackage.isNullOrBlank()) records += NdefRecord.createApplicationRecord(aarPackage.trim())
+    fun buildMessage(card: TokenCard, aarPackage: String?, webUrl: String = ""): NdefMessage {
+        val records = mutableListOf<NdefRecord>()
+        if (webUrl.isNotBlank()) records += NdefRecord.createUri(com.tokencoin.client.card.WebCardLink.create(webUrl, card))
+        records += NdefRecord.createMime(TokenCard.MIME, TokenCardCodec.encode(card))
+        // AAR would send users without the app to Play Store, defeating web fallback.
+        if (webUrl.isBlank() && !aarPackage.isNullOrBlank()) records += NdefRecord.createApplicationRecord(aarPackage.trim())
         return NdefMessage(records.toTypedArray())
     }
 

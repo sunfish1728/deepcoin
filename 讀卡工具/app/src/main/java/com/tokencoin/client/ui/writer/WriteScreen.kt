@@ -96,7 +96,7 @@ fun WriteScreen(
 
     val (card, errors) = f.toCard()
     val aar = f.aarPackage.trim().ifEmpty { Presets.DEFAULT_AAR }.takeIf { f.aarEnabled }
-    val size = card?.let { NfcIo.buildMessage(it, aar).byteArrayLength }
+    val size = card?.let { NfcIo.buildMessage(it, aar, f.webUrl).byteArrayLength }
 
     Column(
         Modifier
@@ -224,10 +224,14 @@ fun WriteScreen(
 
         FormSection("其他") {
             FormField("備註", f.note, { set { copy(note = it) } }, singleLine = false)
+            FormField("網頁版網址（未安裝 App 時使用）", f.webUrl, { set { copy(webUrl = it) } }, keyboard = KeyboardType.Uri,
+                hint = "填入已部署的 HTTPS 網址。網址記錄取代 AAR；連結會帶卡片資料，容量會增加。已安裝 App 自動開啟需設定此網域的 App Links。留空沿用 AAR。")
+            if (f.webUrl.isBlank()) {
             TcSwitchRow("附加 Android App 記錄（AAR）", "刷卡時自動開啟指定 App（預設為本 App）", f.aarEnabled, { set { copy(aarEnabled = it) } })
             if (f.aarEnabled) {
                 FormField("App 套件名", f.aarPackage, { set { copy(aarPackage = it) } }, placeholder = Presets.DEFAULT_AAR, mono = true)
             }
+            } else Text("網頁回退模式：不附加 AAR", color = c.textMuted, style = MaterialTheme.typography.bodySmall)
         }
 
         SizePanel(size, errors)
@@ -238,7 +242,7 @@ fun WriteScreen(
             TcButton("存為設定檔", { saveDialog = true }, modifier = Modifier.weight(1f), height = 48.dp)
             TcButton(
                 "寫入卡片",
-                { if (w.lockAfterWrite) confirmLock = true else w.startWrite(WriteJob(card!!, aar, false)) },
+                { if (w.lockAfterWrite) confirmLock = true else w.startWrite(WriteJob(card!!, aar, false, f.webUrl)) },
                 kind = TcButtonKind.Primary,
                 icon = Icons.Default.Edit,
                 enabled = card != null && nfc == NfcAvailability.READY,
@@ -295,7 +299,7 @@ fun WriteScreen(
         text = "寫入後卡片會變成唯讀，之後無法修改或清除，包含 API 密鑰。",
         confirm = "寫入並鎖定",
         onDismiss = { confirmLock = false },
-        onConfirm = { confirmLock = false; w.startWrite(WriteJob(card, aar, true)) },
+        onConfirm = { confirmLock = false; w.startWrite(WriteJob(card, aar, true, f.webUrl)) },
     )
 
     if (pickAvatar) AvatarRepoBrowser(avatars, onDismiss = { pickAvatar = false }, onPick = { index, e ->

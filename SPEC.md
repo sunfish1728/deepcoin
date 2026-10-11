@@ -11,6 +11,28 @@
 
 讀取端應依 MIME 類型尋找記錄，不要假設它在第幾筆。
 
+## 網頁回退模式（2026-10-11）
+
+寫卡工具填入網頁版網址時，NDEF 改為：
+
+1. **URI 記錄放第一筆**：`https://<使用者部署的網址>/#card=<payload>`。
+2. 原本的 MIME `application/vnd.tokencoin+json` 記錄保留，JSON 與 SHA 規則不變。
+3. **不附加 AAR**：AAR 在未安裝 App 時會開商店，不能達成網頁回退。
+
+`payload` 是完整正規化 JSON（包含 sha）的 UTF-8 位元組，經 Base64 URL-safe 編碼，不含 padding。
+卡片資料放在 URL fragment，不會隨 HTTP 請求送到網頁主機；網頁讀取後清除網址列中的 fragment。
+網址記錄與 MIME 各存一份資料，因此容量明顯增加，寫卡畫面必須估算整份 NDEF。
+網頁版網址為寫卡表單設定，不新增卡片 JSON 欄位。空白網址沿用原本 MIME + 可選 AAR，舊卡仍可讀。
+
+未安裝 App 時由手機開啟 HTTPS 網頁（可能需要點擊系統通知）。已安裝 App 若要自動開啟，
+需在編譯時設定 `-PtokenCoinWebHost=<網域>`，並在該網域部署 Android Digital Asset Links。
+App 同時處理 HTTPS 的 NDEF_DISCOVERED 與 ACTION_VIEW（Android 16 起網頁 NFC 使用 ACTION_VIEW）。
+網域尚未定案時預設 `deepcoin.invalid`，不攔截其他網站。網頁另外提供使用者點擊的
+`tokencoin://card#card=<payload>`「用 App 開啟」入口。
+
+參考：[Android NFC](https://developer.android.com/develop/connectivity/nfc/nfc)、
+[App Links](https://developer.android.com/training/app-links/verify-android-applinks)。
+
 ## 欄位
 
 | key | 型別 | 必填 | 說明 |

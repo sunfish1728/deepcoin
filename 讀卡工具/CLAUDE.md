@@ -156,6 +156,18 @@
 
 ## 開發紀錄
 
+- **2026-10-11，0.6.0**：支援網頁版卡片回退。
+  - 寫卡頁新增「網頁版網址」，保存在草稿與設定檔；網址尚未決定，預設留空。
+  - 有網址時第一筆寫 HTTPS URI（`#card=` 帶完整正規化 JSON 的 Base64url），第二筆保留 MIME；不附 AAR，避免未裝 App 時被導向商店。
+  - 網址留空沿用原本 MIME + 可選 AAR；容量估算包含完整 URI 與 MIME，永久鎖卡流程也使用同一網址設定。
+  - 加入 `card/WebCardLink.kt`，處理 HTTPS 與手動 `tokencoin://card` 開啟，原本 SHA 驗證不變。
+  - 新增 HTTPS 的 ACTION_VIEW / NDEF_DISCOVERED 與手動開 App 的 intent filter。
+    編譯用 `-PtokenCoinWebHost=<網域>`；正式自動開 App 需網站根目錄 assetlinks.json。網址未定時預設 `deepcoin.invalid`，不攔截別人的網站。
+  - 獨立寫卡工具同步上述寫卡功能；卡片 JSON 欄位沒有變動，SPEC.md 補充 NDEF 網頁回退規則。
+  - 新增卡片連結 4 個、表單相容性 3 個測試，總共 72 個單元測試；測試與 assembleDebug 成功。
+  - 真機、真卡、未安裝 App 的跳轉及正式網域驗證仍待測試。
+  - APK：`dist/鯨幣-0.6.0-debug.apk`。
+
 - **2026-10-10**：0.1.0 骨架。
   - 刷卡開啟、讀卡、SHA 驗證、保存卡片、三個分頁。
   - 從多模組專案拆出來成為獨立專案。

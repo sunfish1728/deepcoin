@@ -4,6 +4,7 @@
 > 各工具自己的細節、開發紀錄和待辦，寫在各自資料夾的 `CLAUDE.md`：
 > - [寫卡工具/CLAUDE.md](寫卡工具/CLAUDE.md)
 > - [讀卡工具/CLAUDE.md](讀卡工具/CLAUDE.md)
+> - [網頁版/CLAUDE.md](網頁版/CLAUDE.md)
 >
 > 卡片格式的權威規格在 [SPEC.md](SPEC.md)。
 
@@ -37,6 +38,7 @@
 | 2026-10-10 | 專案推上 GitHub **公開**倉庫 `deepcoin`（帳號 sunfish1728）。VRM 形象放在**使用者自建的公開 GitHub 倉庫**（形象庫），App 能抓任何符合格式的倉庫；格式見 讀卡工具/AVATAR.md §6，流程與工具見 形象倉庫/ |
 | 2026-10-10 | 有 URL 的 VRM：刷卡時自動下載並「跳出」、快取，下次刷同一張卡跳出同一個 |
 | 2026-10-10 | 開始做主頁的形象互動（使用者稱 MMD），用示範 VRM 模型測試，要**公式化、模組化**；後端同樣交給 Codex。最後做成 VRM 渲染器 + 角色包格式（讀卡工具/AVATAR.md） |
+| 2026-10-11 | 移植「網頁版/」，不包含寫卡；Android 寫卡加入未裝 App 時開網頁的模式。網址尚未決定，先做成可設定；同步更新 CLAUDE.md |
 
 使用者偏好：
 - 用**繁體中文**溝通。
@@ -48,6 +50,7 @@
 Token幣/
 ├─ CLAUDE.md        ← 本檔（全專案核心記憶）
 ├─ SPEC.md          ← 卡片格式規格 v1（權威）
+├─ 網頁版/           ← 獨立網頁版（主頁、聊天、VRM、設定，不含寫卡），Vite 建置
 ├─ 寫卡工具/         ← 獨立 Gradle 專案，App ID com.tokencoin.writer
 │   ├─ CLAUDE.md    ← 寫卡工具的開發紀錄 / 待辦
 │   ├─ app/
@@ -72,10 +75,11 @@ GitHub：https://github.com/sunfish1728/deepcoin （公開）。
 | 元件 | 狀態 | 詳見 |
 |---|---|---|
 | 卡片格式 v1 | ✅ 完成 | SPEC.md |
-| 寫卡工具 | ✅ 可編譯，⚠ 未真機測試 | 寫卡工具/CLAUDE.md |
-| 讀卡工具（鯨幣 客戶端） | ✅ 0.5.0：聊天系統 + VRM 虛擬形象互動 + 寫卡 + 即時餘額 + 設定頁 + 形象庫 / 刷卡跳出（模擬器驗證，⚠ 未用真實密鑰、真卡、真機測試） | 讀卡工具/CLAUDE.md |
+| 網頁版（鯨幣） | ✅ 0.1.0：依手機 App 還原主頁、聊天、形象、設定，不含寫卡；本機驗證，尚未部署。API／模型來源需 CORS | 網頁版/CLAUDE.md |
+| 寫卡工具 | ✅ 0.3.0：新增可設定網頁回退，⚠ 未真機測試 | 寫卡工具/CLAUDE.md |
+| 讀卡工具（鯨幣 客戶端） | ✅ 0.6.0：原有功能 + 可設定網頁回退／App Links 入口；⚠ 未用真實密鑰、真卡、真機測試 | 讀卡工具/CLAUDE.md |
 | 角色包格式 v1 | ✅ 完成 | 讀卡工具/AVATAR.md |
-| 形象庫格式 v1（GitHub） | ✅ 規格 + 工具完成，⚠ 還沒有真的公開形象庫（缺允許再配布的模型） | 讀卡工具/AVATAR.md §6、形象倉庫/README.md |
+| 形象庫格式 v1（GitHub） | ✅ 規格、工具 + 公開 deepcoin-avatars：三個木子惡魔 VRM，角色包在 Releases | 讀卡工具/AVATAR.md §6、形象倉庫/README.md |
 | RikkaHub 跳轉 | ⏸ 擱置 | 讀卡工具/CLAUDE.md §研究筆記 |
 | PC 端：改 CC Switch | ⬜ 未開始 | 需要 USB NFC 讀卡機（型號未定，要問使用者） |
 | 虛擬形象配套軟體（PC） | ⬜ 未開始 | 手機端已用卡上的 `char_id` / `avatar`；PC 端可沿用 avatar-web 渲染器與角色包格式 |
@@ -83,6 +87,7 @@ GitHub：https://github.com/sunfish1728/deepcoin （公開）。
 ## 5. 卡片格式的同步規則（重要）
 
 兩個工具各有一份卡片格式程式碼，位置是 `app/src/main/java/com/tokencoin/{writer|client}/card/TokenCard.kt`，兩份內容應該一致，只差在 package 名稱。
+網頁版的 `src/card.js` 也遵循 SPEC.md；改卡片 JSON／SHA／網頁連結編碼時，同步這份程式與 `npm test`。Android 的 `card/WebCardLink.kt` 兩份只差 package。
 讀卡工具 0.4.0 起也有寫卡功能，`card/Presets.kt`、`net/ApiProbe.kt`、`nfc/NfcIo.kt` 的寫入部分和寫卡表單（`writer/WriterState.kt` 的 CardForm）都是從寫卡工具複製的，改其中一邊時記得評估另一邊要不要跟著改。
 
 只要改了卡片格式：
@@ -107,6 +112,17 @@ cd <工具資料夾> && JAVA_HOME="$HOME/.gradle/jdks/eclipse_adoptium-17-amd64-
 ```
 
 ## 7. 全專案開發紀錄
+
+- **2026-10-11（形象庫發布）**：建立公開 https://github.com/sunfish1728/deepcoin-avatars，topic deepcoin-avatar。DeepSeek 鯨魚娘、白紫龍娘、Claude 娘三個角色包各發布 v1.0.0；索引含 SHA、大小、縮圖，README／索引／包內 credit／CREDITS.txt／Release 全部署名「木子惡魔」。原 VRM 內建禁止再配布，使用者另外明確確認「可發布，需署名」後，依該發布許可上傳，保留原檔不修改；許可差異見形象庫 PERMISSION.md。deepcoin 不放模型，本機獨立 checkout 放於被忽略的 形象倉庫/本機倉庫/。
+
+- **2026-10-11（介面還原）**：使用者要求網頁與手機 App 相同。網頁恢復 App 舞台＋底部卡片／聊天、整頁聊天與單欄設定，使用原始深淺色票、Material 圖示、字體與元件尺寸；寫卡省略，底部只有主頁／設定。模擬器畫面對照、示範 VRM、瀏覽器操作與 13 項測試完成；詳見 網頁版/CLAUDE.md。
+
+- **2026-10-11**：
+  - 新增獨立網頁版 0.1.0，不移植寫卡；直接連 API，沿用 VRM 渲染器（獨立複製），瀏覽器本機保存卡片／對話／角色。
+  - 鯨幣 0.6.0、寫卡工具 0.3.0：寫卡新增可設定網頁版網址。有網址時 URI 第一筆 + MIME，省略 AAR；空白沿用原模式。
+  - 卡片資料由 URL fragment 的 Base64url 傳入，SHA 與 JSON 格式不變；SPEC.md 補充 NDEF 回退規則，兩個工具同步連結程式與測試。
+  - 正式網址尚未決定，沒有部署網站；App Links 的網域與簽署憑證需部署時設定，網頁提供手動開啟 App。
+  - 網頁瀏覽器驗證：假卡載入、全部模型、$9.29 餘額、串流／思考／Markdown／用量／自動標題、中途停止與重載保存。真卡／真 API／真實 VRM 與公開形象庫尚未驗證。
 
 - **2026-10-09**：討論方案，經歷三版：純 URI → 424 DNA 加中轉後端 → 定案明文寫卡。定好卡片格式 v1（MIME JSON + SHA-256）。
 - **2026-10-10**：

@@ -139,7 +139,7 @@ class MainActivity : ComponentActivity(), NfcAdapter.ReaderCallback {
         val job = state.writer.pendingWrite
         if (job != null) {
             val status = try {
-                val r = NfcIo.write(tag, NfcIo.buildMessage(job.card, job.aarPackage), job.lock)
+                val r = NfcIo.write(tag, NfcIo.buildMessage(job.card, job.aarPackage, job.webUrl), job.lock)
                 val cap = r.info.maxSize?.let { " / $it" } ?: ""
                 WriteStatus.Success(
                     "已寫入 ${r.bytes}$cap bytes\nUID ${r.info.uid}" +
@@ -170,6 +170,15 @@ class MainActivity : ComponentActivity(), NfcAdapter.ReaderCallback {
                 .onSuccess { state.acceptCard(it) }
                 .onFailure { state.message("debug_card 解析失敗：${it.message}") }
             return
+        }
+        if (intent?.action == Intent.ACTION_VIEW || intent?.action == NfcAdapter.ACTION_NDEF_DISCOVERED) {
+            val link = intent.data?.toString()
+            if (link != null && (intent.action == Intent.ACTION_VIEW || link.contains("#card="))) {
+                runCatching { com.tokencoin.client.card.WebCardLink.decode(link) }
+                    .onSuccess { state.acceptCard(it) }
+                    .onFailure { state.message("卡片連結解析失敗：${it.message}") }
+                return
+            }
         }
         if (intent?.action != NfcAdapter.ACTION_NDEF_DISCOVERED) return
         val messages = if (Build.VERSION.SDK_INT >= 33) {

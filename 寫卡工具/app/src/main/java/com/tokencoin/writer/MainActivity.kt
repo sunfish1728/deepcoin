@@ -67,7 +67,7 @@ class MainActivity : ComponentActivity(), NfcAdapter.ReaderCallback {
         val job = state.pendingWrite
         if (job != null) {
             val status = try {
-                val msg = NfcIo.buildMessage(job.card, job.aarPackage)
+                val msg = NfcIo.buildMessage(job.card, job.aarPackage, job.webUrl)
                 val r = NfcIo.write(tag, msg, job.lock)
                 val cap = r.info.maxSize?.let { " / $it" } ?: ""
                 WriteStatus.Success(

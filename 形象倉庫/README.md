@@ -76,3 +76,17 @@ python <本資料夾>/deepcoin_avatar.py publish whale
 - 倉庫必須公開，App 才下載得到。
 - 角色包上限 300 MB（App 的下載上限）。50 MB 以下也可以用 `pack --host repo` 直接放進倉庫的 `files/`，但**不要用 Git LFS**。
 - 只放你有權散布的模型；`pack` 會擋下授權不允許再配布的 VRM。`--private` 只給自己本機測試用，打出來的包不可公開。
+
+## 已發布的形象庫（2026-10-11）
+
+[木子惡魔・鯨幣形象庫](https://github.com/sunfish1728/deepcoin-avatars) 已發布三個 VRM 1.0 角色包，作者均為**木子惡魔（木子恶魔）**：
+
+| 角色 | char_id | 版本 |
+|---|---|---|
+| DeepSeek 鯨魚娘（藍色小肥魚） | deepseek-whale | 1.0.0 |
+| 白紫龍娘 | white-purple-dragon | 1.0.0 |
+| Claude 娘（橘髮花飾） | claude-whale | 1.0.0 |
+
+模型內建 allowRedistribution=false，使用者於本次對話另行明確確認「可發布，需署名」，因此依該發布許可整理並上傳，保留原始 VRM，不更改授權欄位。許可說明與原檔雜湊見獨立倉庫的 PERMISSION.md／source-models.json。一般打包工具仍維持授權檢查；本次是有另外確認發布許可的個別處理。
+
+本機 checkout 在 形象倉庫/本機倉庫/deepcoin-avatars，整個資料夾由 deepcoin 忽略，不把模型帶進 App 倉庫。

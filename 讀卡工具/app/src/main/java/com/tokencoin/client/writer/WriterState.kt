@@ -35,10 +35,13 @@ data class CardForm(
     val note: String = "",
     val aarEnabled: Boolean = true,
     val aarPackage: String = "",
+    val webUrl: String = "",
 ) {
     /** 轉換並驗證；失敗時回傳錯誤訊息清單。 */
     fun toCard(now: Long = Instant.now().epochSecond): Pair<TokenCard?, List<String>> {
         val errors = mutableListOf<String>()
+        if (webUrl.isNotBlank()) runCatching { com.tokencoin.client.card.WebCardLink.validate(webUrl) }
+            .onFailure { errors += it.message ?: "網頁版網址格式錯誤" }
         if (vendor.isBlank()) errors += "請填寫 AI 模型供應商"
         if (model.isBlank()) errors += "請填寫預設模型"
         if (provider.isBlank()) errors += "請填寫 API 供應商名稱"
@@ -76,6 +79,7 @@ data class CardForm(
         put("key", key); put("apps", JSONArray(apps.toList())); put("exp", exp); put("balanceUsd", balanceUsd)
         put("char", char); put("charId", charId); put("avatar", avatar)
         put("note", note); put("aarEnabled", aarEnabled); put("aarPackage", aarPackage)
+        put("webUrl", webUrl)
     }
 
     companion object {
@@ -89,6 +93,7 @@ data class CardForm(
             charId = o.optString("charId"), avatar = o.optString("avatar"),
             note = o.optString("note"), aarEnabled = o.optBoolean("aarEnabled", true),
             aarPackage = o.optString("aarPackage"),
+            webUrl = o.optString("webUrl"),
         )
 
         fun fromCard(c: TokenCard) = CardForm(
@@ -107,7 +112,7 @@ fun newCardId(): String = ByteArray(4).also { SecureRandom().nextBytes(it) }
 data class Profile(val name: String, val form: CardForm)
 
 /** 寫卡任務：等待使用者把卡片靠近。 */
-data class WriteJob(val card: TokenCard, val aarPackage: String?, val lock: Boolean)
+data class WriteJob(val card: TokenCard, val aarPackage: String?, val lock: Boolean, val webUrl: String = "")
 
 sealed interface WriteStatus {
     data object Waiting : WriteStatus

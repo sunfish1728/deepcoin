@@ -72,7 +72,7 @@ fun WriteScreen(state: AppState) {
 
     val (card, errors) = f.toCard()
     val aar = f.aarPackage.trim().ifEmpty { Presets.DEFAULT_AAR }.takeIf { f.aarEnabled }
-    val size = card?.let { NfcIo.buildMessage(it, aar).byteArrayLength }
+    val size = card?.let { NfcIo.buildMessage(it, aar, f.webUrl).byteArrayLength }
 
     Column(
         Modifier
@@ -198,12 +198,16 @@ fun WriteScreen(state: AppState) {
 
         Section("其他") {
             Field("備註", f.note, { set { copy(note = it) } }, singleLine = false)
+            Field("網頁版網址（未安裝 App 時使用）", f.webUrl, { set { copy(webUrl = it) } }, keyboard = KeyboardType.Uri,
+                hint = "已部署的 HTTPS 網址。填入後以網址取代 AAR，並帶卡片資料；留空沿用 AAR。App 自動接住網址需設定 App Links。")
+            if (f.webUrl.isBlank()) {
             SwitchRow("附加 Android App 記錄（AAR）", "刷卡時自動開啟指定 App（日後的改版 RikkaHub）", f.aarEnabled) {
                 set { copy(aarEnabled = it) }
             }
             if (f.aarEnabled) {
                 Field("App 套件名", f.aarPackage, { set { copy(aarPackage = it) } }, hint = Presets.DEFAULT_AAR, mono = true)
             }
+            } else Text("網頁回退模式：不附加 AAR")
         }
 
         SizeCard(size, errors)
@@ -215,7 +219,7 @@ fun WriteScreen(state: AppState) {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             OutlinedButton(onClick = { saveDialog = true }, modifier = Modifier.weight(1f)) { Text("存為設定檔") }
             Button(
-                onClick = { if (state.lockAfterWrite) confirmLock = true else state.startWrite(WriteJob(card!!, aar, false)) },
+                onClick = { if (state.lockAfterWrite) confirmLock = true else state.startWrite(WriteJob(card!!, aar, false, f.webUrl)) },
                 enabled = card != null,
                 modifier = Modifier.weight(1f),
             ) { Text("寫入卡片") }
@@ -248,7 +252,7 @@ fun WriteScreen(state: AppState) {
         confirmButton = {
             TextButton(onClick = {
                 confirmLock = false
-                state.startWrite(WriteJob(card, aar, true))
+                state.startWrite(WriteJob(card, aar, true, f.webUrl))
             }) { Text("寫入並鎖定", color = MaterialTheme.colorScheme.error) }
         },
         dismissButton = { TextButton(onClick = { confirmLock = false }) { Text("取消") } },

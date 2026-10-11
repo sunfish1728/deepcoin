@@ -34,9 +34,11 @@ data class WriteResult(val info: TagInfo, val bytes: Int, val locked: Boolean)
 
 object NfcIo {
 
-    fun buildMessage(card: TokenCard, aarPackage: String?): NdefMessage {
-        val records = mutableListOf(NdefRecord.createMime(TokenCard.MIME, TokenCardCodec.encode(card)))
-        if (!aarPackage.isNullOrBlank()) records += NdefRecord.createApplicationRecord(aarPackage.trim())
+    fun buildMessage(card: TokenCard, aarPackage: String?, webUrl: String = ""): NdefMessage {
+        val records = mutableListOf<NdefRecord>()
+        if (webUrl.isNotBlank()) records += NdefRecord.createUri(com.tokencoin.writer.card.WebCardLink.create(webUrl, card))
+        records += NdefRecord.createMime(TokenCard.MIME, TokenCardCodec.encode(card))
+        if (webUrl.isBlank() && !aarPackage.isNullOrBlank()) records += NdefRecord.createApplicationRecord(aarPackage.trim())
         return NdefMessage(records.toTypedArray())
     }
 
